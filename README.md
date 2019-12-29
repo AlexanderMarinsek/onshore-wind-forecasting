@@ -1,2 +1,2 @@
-# onshore-wind-forecasting
+# Onshore Wind Forecasting
 Onshore wind forecasting approach using ERA5-Land data and various machine learning algorithms, with emphasis on Random Forests.
