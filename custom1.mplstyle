@@ -1,0 +1,21 @@
+## More at: https://matplotlib.org/3.1.1/tutorials/introductory/customizing.html
+
+axes.titlesize : 16
+axes.titlepad : 10
+axes.labelsize : 14
+axes.labelpad : 10
+
+xtick.labelsize : 12
+ytick.labelsize : 12
+
+legend.framealpha : 0.65
+legend.loc : upper right
+legend.fontsize : 14
+
+lines.markersize : 10
+lines.linewidth : 1
+
+figure.subplot.wspace : 0.3
+
+figure.figsize : 14.0, 7.0
+figure.dpi : 300
