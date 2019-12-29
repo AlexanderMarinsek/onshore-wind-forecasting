@@ -1,5 +1,7 @@
 import numpy as np
 
+from datetime import datetime
+from math import sin, cos
 
 # converts number to string with leading zero
 def to_string(num):
@@ -16,31 +18,64 @@ def to_string(num):
 # label_V and label_U contain wind components for day 'd+1'
 # note that only values from data point (1,1) are used (from 3x3 grid)
 def get_features_and_labels(relative_path, location, years, months, days):
+
     features = []
     label_V = []
     label_U = []
+
     for year in years:
+
+        days_in_year = 1.0 * 365
+        hours_in_year = days_in_year * 24
+
         for month in months:
             for day in days:
                 # TODO: allow_pickle=True?
-                data = np.load(
-                    relative_path + '/' + location + '/' + to_string(year) + '/' + to_string(month) + '/' + to_string(
-                        day) + '/data.npz')
-                if len(features) > 0:
-                    features = np.append(features, data[data.files[1]][:][:, :, 1, 1], axis=1)
-                else:
-                    features = data[data.files[1]][:][:, :, 1, 1]
+                try:
+                    data = np.load(
+                        relative_path + '/' + location + '/' + to_string(year) + '/' + to_string(month) + '/' + to_string(
+                            day) + '/data.npz')
+                #except IOError:
+                except FileNotFoundError:
+                    break
 
+
+                day_of_year = datetime(year, month, day).timetuple().tm_yday
+                sh = (day_of_year - 1) * 24
+                sin_daily_tmpst = np.array([[ sin( (sh+i) / 24.0 * 2*np.pi ) for i in range(0, 24) ]])
+                cos_daily_tmpst = np.array([[ cos( (sh+i) / 24.0 * 2*np.pi ) for i in range(0, 24) ]])
+                sin_yearly_tmpst = np.array([[ sin( (sh+i) / hours_in_year * 2*np.pi ) for i in range(0, 24) ]])
+                cos_yearly_tmpst = np.array([[ cos( (sh+i) / hours_in_year * 2*np.pi ) for i in range(0, 24) ]])
+
+                tmp = np.append(sin_daily_tmpst, cos_daily_tmpst, axis=0)
+                tmp = np.append(tmp, sin_yearly_tmpst, axis=0)
+                tmp = np.append(tmp, cos_yearly_tmpst, axis=0)
+
+                #tmp = np.append(tmp, data[data.files[1]][:][:, :, 1, 1], axis=0)
+                # Exclude wind from features
+                tmp = np.append(tmp, data[data.files[1]][:][:, :, 1, 1][2:], axis=0)
+                #tmp = data[data.files[1]][:][:, :, 1, 1]
+
+                if len(features) > 0:
+                    features = np.append(features, tmp, axis=1)
+                else:
+                    features = tmp
+                """
                 try:
                     # try getting labels for next day
                     data = np.load(relative_path + '/' + location + '/' + to_string(year) + '/' + to_string(
                         month) + '/' + to_string(day + 1) + '/data.npz')
                 except FileNotFoundError:
                     # if next day is new month, get labels for first day in new month
-                    data = np.load(relative_path + '/' + location + '/' + to_string(year) + '/' + to_string(
-                        month + 1) + '/' + to_string(1) + '/data.npz')
+                    try:
+                        data = np.load(relative_path + '/' + location + '/' + to_string(year) + '/' + to_string(
+                            month + 1) + '/' + to_string(1) + '/data.npz')
+                    except FileNotFoundError:
+                        label_V = np.append(label_V, np.zeros((24)), axis=0)
+                        label_U = np.append(label_U, np.zeros((24)), axis=0)
+                        break
                 # TODO: do same for next year and handle 'no next day' situation
-
+                """
                 if len(label_V) > 0 and len(label_U) > 0:
                     label_V = np.append(label_V, data[data.files[1]][0][:, 1, 1], axis=0)
                     label_U = np.append(label_U, data[data.files[1]][1][:, 1, 1], axis=0)
