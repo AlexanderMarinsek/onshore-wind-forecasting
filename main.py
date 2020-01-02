@@ -1,10 +1,12 @@
-import rf
-from baseline import run_baseline as run_bl
 from results import Results
+from rf_model import Rf
+from bl_model import Bl
+from evaluate import calc_errors
 
 from datetime import datetime, timedelta
 from pytz import timezone
 import numpy as np
+
 
 
 # TODO: DONE take all 3x3 points into account
@@ -22,67 +24,64 @@ import numpy as np
 # TODO: Add more direct comparison between BL, RF, RNN... (not only plots) - compare scores, or forecasts?
 
 
-# set location (as string)
-location = 'Area-44.5-28.5-44.7-28.7'
-
-# set relative path to source data file
-data_path = '../ERA5-Land'
-
-# Romania time is UTC +3/+2 (summer/winter)
-tz = timezone("Europe/Bucharest")
-
-# Local time training data start/stop (forecast begins one hour after stop)
-# start_dt = [
-#     datetime(2017, 1, 15, 0), datetime(2017, 2, 15, 0),
-#     datetime(2017, 3, 15, 0), datetime(2017, 4, 15, 0),
-#     datetime(2017, 5, 15, 0), datetime(2017, 6, 15, 0),
-#     datetime(2017, 7, 15, 0), datetime(2017, 8, 15, 0),
-#     datetime(2017, 9, 15, 0), datetime(2017, 10, 15, 0),
-#     datetime(2017, 11, 15, 0), datetime(2017, 12, 15, 0)]
-# stop_dt = [
-#     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
-#     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
-#     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
-#     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
-#     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
-#     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
-start_dt = [datetime(2018, 1, 1, 0), datetime(2018, 2, 1, 0)]
-stop_dt = [datetime(2018, 1, 5, 0), datetime(2018, 2, 5, 0)]
-
-# Convert to localized, aware datetime object (2018-...00:00+02:00)
-start_loc_dt = [ tz.localize(s) for s in start_dt ]
-stop_loc_dt = [ tz.localize(s) for s in stop_dt ]
-
-# Initiate new results directory and global object
-date_str = datetime.utcnow().strftime("%04Y-%02m-%02d")
-results = Results("./Results", "%sx01" % date_str)
-
-
-# M: Number of preceeding hours used in forecast     (CPU heavy)
-# N: Number of forecasted hours                      (CPU light)
-# G: Feature data points Grid type:                  (CPU heavy)
-#   0: single point (same as for labels)
-#   1: +
-#   2: x
-#   3: full (3x3)
-M_arr = [1, 2, 3]
-# N_arr = [1, 2, 3, 6, 12, 24, 48]
-N_arr = [1, 6, 12, 48]
-G_arr = [0, 1, 2, 3]
-
-# Default values (reset before M-N-G iterations)
-M_default = 1
-N_default = 24
-G_default = 0
-
-# Optimal forecast values
-M_opt = 3
-N_opt = 24
-G_opt = 3
-
 
 
 def main():
+
+    # set location (as string)
+    location = 'Area-44.5-28.5-44.7-28.7'
+
+    # set relative path to source data file
+    data_path = '../ERA5-Land'
+
+    # Romania time is UTC +3/+2 (summer/winter)
+    tz = timezone("Europe/Bucharest")
+
+    # Local time training data start/stop (forecast begins one hour after stop)
+    # start_dt = [
+    #     datetime(2017, 1, 15, 0), datetime(2017, 2, 15, 0),
+    #     datetime(2017, 3, 15, 0), datetime(2017, 4, 15, 0),
+    #     datetime(2017, 5, 15, 0), datetime(2017, 6, 15, 0),
+    #     datetime(2017, 7, 15, 0), datetime(2017, 8, 15, 0),
+    #     datetime(2017, 9, 15, 0), datetime(2017, 10, 15, 0),
+    #     datetime(2017, 11, 15, 0), datetime(2017, 12, 15, 0)]
+    # stop_dt = [
+    #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+    #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+    #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+    #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
+    #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
+    #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+    start_dt = [datetime(2018, 1, 1, 0), datetime(2018, 2, 1, 0)]
+    stop_dt = [datetime(2018, 1, 5, 0), datetime(2018, 2, 5, 0)]
+
+    # Convert to localized, aware datetime object (2018-...00:00+02:00)
+    start_loc_dt = [tz.localize(s) for s in start_dt]
+    stop_loc_dt = [tz.localize(s) for s in stop_dt]
+
+    # Initiate new results directory and global object
+    date_str = datetime.utcnow().strftime("%04Y-%02m-%02d")
+    results = Results("./Results", "%sx01" % date_str)
+
+    # M: Number of preceeding hours used in forecast     (CPU heavy)
+    # N: Number of forecasted hours                      (CPU light)
+    # G: Feature data points Grid type:                  (CPU heavy)
+    #   0: single point (same as for labels)
+    #   1: +
+    #   2: x
+    #   3: full (3x3)
+    M = [1, 2]
+    # M = [1]
+    N = [24]
+    G = [0, 3]
+    # G = [0]
+
+    models = [
+        Bl("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "BL"),
+        Rf("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "RF"),
+        Rf("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "rf")   # Put SVR here
+    ]
+
 
 
     initial_time = datetime.now()
@@ -94,200 +93,227 @@ def main():
     print (text)
     results.append_log(text)
 
-    # Baseline scores
-    BL_score_all = []
-    # Random Forest scores
-    RF_M_score_all = RF_N_score_all = RF_G_score_all = []
-    # Optimal random forest
-    RF_optimal_score_all = []
+    models[1].set_vars(3, 24, 2)
+    # tune_rf( models[1], start_loc_dt, stop_loc_dt, M, N, G, results )
 
-    # Iterate dates ############################################################
+    #names = [models[int(i/2)].name for i in range(0, len(models)*2)]
+    names = [model.name for model in models]
+    compare_models( models, names, start_loc_dt, stop_loc_dt, results )
+
+    # N = [n for n in range(1,25)]
+    # test_rf_n_variable( models[1], start_loc_dt, stop_loc_dt, N, results )
+
+
+def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
+
+    res_3d = []
+
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
-        now = datetime.now().strftime("%04Y-%02m-%02dT%02H:%02M:%02S")
-        text = "* New dates (%s): \n\t%s - %s" % ( now, start, stop )
-        print (text)
-        results.append_log(text)
+        res_2d = lab_for_2d = []
 
+        for model in models:
 
-        # Iterate M ############################################################
-        # M = M_default
-        # N = N_default
-        # G = G_default
-        #
-        # RF_M_score = rf.iterate_M(results, location, data_path, start, stop, M_arr, N, G)
-        # bs_labels = ["bs_V_0_M", "bs_V_tot_M", "bs_U_0_M", "bs_U_tot_M"]
-        # ss_labels = ["ss_V_0_M", "ss_V_tot_M", "ss_U_0_M", "ss_U_tot_M"]
-        # figname = "RF-M-scores_%s_%s_M_%d_%d" % (
-        #     start.strftime("%04Y-%02m-%02d"),
-        #     stop.strftime("%04Y-%02m-%02d"),
-        #     N, G)
-        # results.plot_RF_M_scores(M_arr, RF_M_score[:4, :], RF_M_score[4:8, :],
-        #     bs_labels, ss_labels, figname)
-        #
-        # if len(RF_M_score_all) > 0:
-        #     RF_M_score_all = np.concatenate((RF_M_score_all, RF_M_score), axis=0)
-        # else:
-        #     RF_M_score_all = RF_M_score
-        #
-        #
-        # # Iterate N ############################################################
-        # M = M_default
-        # N = N_default
-        # G = G_default
-        #
-        # RF_N_score = rf.iterate_N(results, location, data_path, start, stop, M, N_arr, G)
-        # bs_labels = ["bs_V_0_N", "bs_V_tot_N", "bs_U_0_N", "bs_U_tot_N"]
-        # ss_labels = ["ss_V_0_N", "ss_V_tot_N", "ss_U_0_N", "ss_U_tot_N"]
-        # figname = "RF-N-scores_%s_%s_%d_N_%d" % (
-        #     start.strftime("%04Y-%02m-%02d"),
-        #     stop.strftime("%04Y-%02m-%02d"),
-        #     M_default, G_default)
-        # results.plot_RF_N_scores(N_arr, RF_N_score[:4, :], RF_N_score[4:8, :],
-        #     bs_labels, ss_labels, figname)
-        #
-        # if len(RF_N_score_all) > 0:
-        #     RF_N_score_all = np.concatenate((RF_N_score_all, RF_N_score), axis=0)
-        # else:
-        #     RF_N_score_all = RF_N_score
-        #
-        #
-        # # Iterate G ############################################################
-        # M = M_default
-        # N = N_default
-        # G = G_default
-        #
-        # RF_G_score = rf.iterate_G(results, location, data_path, start, stop, M, N, G_arr)
-        # bs_labels = ["bs_V_0_G", "bs_V_tot_G", "bs_U_0_G", "bs_U_tot_G"]
-        # ss_labels = ["ss_V_0_G", "ss_V_tot_G", "ss_U_0_G", "ss_U_tot_G"]
-        # figname = "RF-G-scores_%s_%s_%d_%d_G" % (
-        #     start.strftime("%04Y-%02m-%02d"),
-        #     stop.strftime("%04Y-%02m-%02d"),
-        #     M_default, N_default)
-        # results.plot_RF_N_scores(G_arr, RF_G_score[:4, :], RF_G_score[4:8, :],
-        #     bs_labels, ss_labels, figname)
-        #
-        # if len(RF_G_score_all) > 0:
-        #     RF_G_score_all = np.concatenate((RF_G_score_all, RF_G_score), axis=0)
-        # else:
-        #     RF_G_score_all = RF_G_score
+            [t, labels, forecast] = model.run( start, stop )
+            errors = calc_errors(labels, forecast)
+            res_tmp = np.array([np.concatenate((errors, [t]), axis=0)])
 
+            if len(lab_for_2d) > 0:
+                lab_for_2d = np.concatenate((lab_for_2d, np.array([labels, forecast])), axis=0)
+                res_2d = np.concatenate((res_2d, res_tmp), axis=0)
+            else:
+                lab_for_2d = np.array([labels, forecast])
+                res_2d = res_tmp
 
-        # Run baseline #########################################################
-        BL_score = run_bl(results, location, data_path, start, stop)
+        filename = "Comparison-forecast_%s_%s" % (
+            start.strftime("%04Y-%02m-%02d"),
+            stop.strftime("%04Y-%02m-%02d"))
+        results.save_comparison_forecast(lab_for_2d, names, filename)
+        results.plot_comparison_forecast(lab_for_2d, names, filename)
 
-        if len(BL_score_all) > 0:
-            BL_score_all = np.concatenate((BL_score_all, BL_score), axis=0)
+        if len(res_3d) > 0:
+            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
         else:
-            BL_score_all = BL_score
+            res_3d = np.array([res_2d])
+
+    # Save full (3D) collection of errors and times
+    filename = "Comparison-errors_%s_%s" % (
+        start.strftime("%04Y-%02m-%02d"),
+        stop.strftime("%04Y-%02m-%02d"))
+    results.save_npz(res_3d, filename)
+
+    # Calculate average errors and times
+    res_avg = np.zeros(res_3d[0, :, :].shape)  # exclude M, N, G variables
+    length = res_3d.shape[0]  # number of dates
+
+    for i in range(0, length):
+        res_avg += (1.0 * res_3d[i, :, :] / length)
+
+    # Save average errors and times
+    data = np.concatenate( ( np.array([names]).T, res_avg ), axis=1 )
+    c_names = ["Model", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
+    filename = "Comparison-results-avg"
+    results.save_csv(data, c_names, filename)
 
 
-        # Create optimal RF forecast ###########################################
-        M = M_opt
-        N = N_opt
-        G = G_opt
+def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
+    """
+    Based on forecast errors, set optimal M, N, G RF variables.
 
-        RF_optimal_score = rf.optimal_forecast(results, location, data_path, start, stop, M, N, G)
+    :param model: RF model based on custom class.
+    :param start_loc_dt: Start time, localized (aware) datetime object.
+    :param stop_loc_dt: Stop time, localized (aware) datetime object.
+    :param M: Number of preceeding hours used in forecast.
+    :param N: Number of forecasted hours.
+    :param G: Feature data points Grid type.
+    :param results: Results object reference.
 
-        if len(RF_optimal_score_all) > 0:
-            RF_optimal_score_all = np.concatenate((RF_optimal_score_all, RF_optimal_score), axis=0)
+    :return: List containing elapsed time, actual and forecasted values
+        [t, labels, forecast]
+    """
+
+    model.set_parameters(100, "mse")
+
+    res_3d = []
+
+    for start, stop in zip(start_loc_dt, stop_loc_dt):
+        res_2d = []
+        for m in M:
+            for n in N:
+                for g in G:
+                    model.set_vars(m, n, g)     # Set M, N, G
+                    [t, labels, forecast] = model.run(start, stop)
+
+                    filename = "RF-forecast_%s_%s_%d_%d_%d" % (
+                        start.strftime("%04Y-%02m-%02d"),
+                        stop.strftime("%04Y-%02m-%02d"),
+                        m, n, g)
+                    results.save_forecast(labels, forecast, filename)
+                    results.plot_forecast(labels, forecast, filename)
+
+                    errors = calc_errors(labels, forecast)
+                    res_tmp = np.array([
+                        np.concatenate(([m, n, g], errors, [t]), axis=0)])
+
+                    if len(res_2d) > 0:
+                        res_2d = np.concatenate((res_2d, res_tmp), axis=0)
+                    else:
+                        res_2d = res_tmp
+
+        if len(res_3d) > 0:
+            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
         else:
-            RF_optimal_score_all = RF_optimal_score
+            res_3d = np.array([res_2d])
 
 
-    # Generate combined score plot for M
-    if len(RF_M_score_all) > 0:
-        bs_labels = ["bs_V_0_M", "bs_V_tot_M", "bs_U_0_M", "bs_U_tot_M"]
-        ss_labels = ["ss_V_0_M", "ss_V_tot_M", "ss_U_0_M", "ss_U_tot_M"]
-        figname = "RF-M-scores-all_%s_%s_M_%d_%d" % (
-            start_loc_dt[0].strftime("%04Y-%02m-%02d"),
-            stop_loc_dt[-1].strftime("%04Y-%02m-%02d"),
-            N_default, G_default)
-        results.plot_RF_M_scores_all(M_arr,
-            np.array([RF_M_score_all[i*8:i*8+4,:] for i in range(0, int(RF_M_score_all.shape[0]/8))]),
-            np.array([RF_M_score_all[i*8+4:i*8+8,:] for i in range(0, int(RF_M_score_all.shape[0]/8))]),
-            bs_labels, ss_labels, figname)
+    # Save full (3D) collection of errors and times
+    filename = "RF-optimization-errors%s_%s" % (
+        start.strftime("%04Y-%02m-%02d"),
+        stop.strftime("%04Y-%02m-%02d"))
+    results.save_npz(res_3d, filename)
 
-    # Generate combined score plot for N
-    if len(RF_N_score_all) > 0:
-        bs_labels = ["bs_V_0_N", "bs_V_tot_N", "bs_U_0_N", "bs_U_tot_N"]
-        ss_labels = ["ss_V_0_N", "ss_V_tot_N", "ss_U_0_N", "ss_U_tot_N"]
-        figname = "RF-N-scores-all_%s_%s_%d_N_%d" % (
-            start_loc_dt[0].strftime("%04Y-%02m-%02d"),
-            stop_loc_dt[-1].strftime("%04Y-%02m-%02d"),
-            M_default, G_default)
-        results.plot_RF_N_scores_all(N_arr,
-            np.array([RF_N_score_all[i*8:i*8+4,:] for i in range(0, int(RF_N_score_all.shape[0]/8))]),
-            np.array([RF_N_score_all[i*8+4:i*8+8,:] for i in range(0, int(RF_N_score_all.shape[0]/8))]),
-            bs_labels, ss_labels, figname)
+    # Calculate average errors and times
+    res_avg = np.zeros(res_3d[0,:,3:].shape)   # exclude M, N, G variables
+    length = res_3d.shape[0]    # number of dates
 
-    # Generate combined score plot for G
-    if len(RF_G_score_all) > 0:
-        bs_labels = ["bs_V_0_G", "bs_V_tot_G", "bs_U_0_G", "bs_U_tot_G"]
-        ss_labels = ["ss_V_0_G", "ss_V_tot_G", "ss_U_0_G", "ss_U_tot_G"]
-        figname = "RF-G-scores-all_%s_%s_%d_%d_G" % (
-            start_loc_dt[0].strftime("%04Y-%02m-%02d"),
-            stop_loc_dt[-1].strftime("%04Y-%02m-%02d"),
-            N_default, M_default)
-        results.plot_RF_G_scores_all(G_arr,
-            np.array([RF_G_score_all[i*8:i*8+4,:] for i in range(0, int(RF_G_score_all.shape[0]/8))]),
-            np.array([RF_G_score_all[i*8+4:i*8+8,:] for i in range(0, int(RF_G_score_all.shape[0]/8))]),
-            bs_labels, ss_labels, figname)
+    for i in range (0, length):
+        res_avg += ( 1.0 * res_3d[i,:,3:] / length )
+
+    # Save average errors and times
+    data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
+    c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
+    filename = "RF-optimization-errors-avg_%s_%s" % (
+        start.strftime("%04Y-%02m-%02d"),
+        stop.strftime("%04Y-%02m-%02d"))
+    results.save_csv( data, c_names, filename )
+
+    # Plot average errors and times
+    results.plot_rf_optimization( data, filename )
+
+    # Find optimal M, N, G combination
+    [M_opt, N_opt, G_opt] = data[-1, 0:3]   # Last is optimal by default
+    e_opt = data[-1, -2]
+    for i in range(0, data.shape[0]-1):
+        if data[i, -2] < e_opt:
+            e_opt = data[i, -2]
+            [M_opt, N_opt, G_opt] = data[i, 0:3]
+
+    # Tune RF to optimal parameters
+    model.set_vars(int(M_opt), int(N_opt), int(G_opt))
 
 
-    # Generate combined score plot for Baseline
-    if len(BL_score_all) > 0:
-        bs_labels = ["bs_V_0_BL", "bs_V_tot_BL", "bs_U_0_BL", "bs_U_tot_BL"]
-        ss_labels = ["ss_V_0_BL", "ss_V_tot_BL", "ss_U_0_BL", "ss_U_tot_BL"]
-        figname = "BL-scores-all_%s_%s_%d_%d_BL" % (
-            start_loc_dt[0].strftime("%04Y-%02m-%02d"),
-            stop_loc_dt[-1].strftime("%04Y-%02m-%02d"),
-            N_default, M_default)
-        results.plot_BL_scores_all([0],
-            np.array([BL_score_all[i*8:i*8+4,:] for i in range(0, int(BL_score_all.shape[0]/8))]),
-            np.array([BL_score_all[i*8+4:i*8+8,:] for i in range(0, int(BL_score_all.shape[0]/8))]),
-            bs_labels, ss_labels, figname)
-
-    # Generate combined score plot for optimal RF
-    if len(RF_optimal_score_all) > 0:
-        bs_labels = ["bs_V_0_O", "bs_V_tot_O", "bs_U_0_O", "bs_U_tot_O"]
-        ss_labels = ["ss_V_0_O", "ss_V_tot_O", "ss_U_0_O", "ss_U_tot_O"]
-        figname = "RF-optimal-scores-all_%s_%s_%d_%d_%d" % (
-            start_loc_dt[0].strftime("%04Y-%02m-%02d"),
-            stop_loc_dt[-1].strftime("%04Y-%02m-%02d"),
-            M_opt, N_opt, G_opt)
-        results.plot_RF_optimal_scores_all([0],
-            np.array([RF_optimal_score_all[i*8:i*8+4,:] for i in range(0, int(RF_optimal_score_all.shape[0]/8))]),
-            np.array([RF_optimal_score_all[i*8+4:i*8+8,:] for i in range(0, int(RF_optimal_score_all.shape[0]/8))]),
-            bs_labels, ss_labels, figname)
 
 
-    # Generate combined plot for scores of forecasts
-    scores = np.concatenate((BL_score_all[:, :], RF_optimal_score_all[:, :]), axis=1)
-    bs_labels = ["BL", "RF"]
-    ss_labels = ["ss_V_0", "ss_V_tot", "ss_U_0", "ss_U_tot"]
-    figname = "Combined-scores_%s_%s" % (
-        start_loc_dt[0].strftime("%04Y-%02m-%02d"),
-        stop_loc_dt[-1].strftime("%04Y-%02m-%02d"))
+def test_rf_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
+    """
+    Collect error data of RF forecast for different N values.
 
-    # [ forecast score (BL, RF...), error (four in total), date ]
-    bs_arr = np.array([scores[i*8:i*8+4, :] for i in range(0,int(scores.shape[0]/8))]).T
-    ss_arr = np.array([scores[i*8+4:i*8+8, :] for i in range(0,int(scores.shape[0]/8))]).T
+    :param model: RF model based on custom class.
+    :param start_loc_dt: Start time, localized (aware) datetime object.
+    :param stop_loc_dt: Stop time, localized (aware) datetime object.
+    :param N: Number of forecasted hours.
+    :param results: Results object reference.
 
-    results.plot_score_comparison([0], bs_arr, ss_arr, bs_labels, ss_labels, figname)
+    :return: List containing elapsed time, actual and forecasted values
+        [t, labels, forecast]
+    """
 
+    model.set_parameters(100, "mse")
 
-    finish_time = datetime.now()
-    elapsed = finish_time - initial_time
+    res_3d = []
 
-    text = "Finish: %s" % finish_time.strftime("%04Y-%02m-%02dT%02H:%02M:%02S")
-    print (text)
-    results.append_log(text)
+    [m, n, g] = model.get_vars()
 
-    text = "Elapsed: %s" % str(elapsed)
-    print (text)
-    results.append_log(text)
+    for start, stop in zip(start_loc_dt, stop_loc_dt):
+        res_2d = []
+        for n in N:
+            model.set_vars(m, n, g)  # Set M, N, G
+            [t, labels, forecast] = model.run(start, stop)
 
+            filename = "RF-forecast_%s_%s_%d_%d_%d" % (
+                start.strftime("%04Y-%02m-%02d"),
+                stop.strftime("%04Y-%02m-%02d"),
+                m, n, g)
+            results.save_forecast(labels, forecast, filename)
+            results.plot_forecast(labels, forecast, filename)
+
+            errors = calc_errors(labels, forecast)
+            res_tmp = np.array([
+                np.concatenate(([m, n, g], errors, [t]), axis=0)])
+
+            if len(res_2d) > 0:
+                res_2d = np.concatenate((res_2d, res_tmp), axis=0)
+            else:
+                res_2d = res_tmp
+
+        if len(res_3d) > 0:
+            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
+        else:
+            res_3d = np.array([res_2d])
+
+    # Save full (3D) collection of errors and times
+    filename = "RF-N-test-errors_%s_%s" % (
+        start.strftime("%04Y-%02m-%02d"),
+        stop.strftime("%04Y-%02m-%02d"))
+    results.save_npz(res_3d, filename)
+
+    # Calculate average errors and times
+    res_avg = np.zeros(res_3d[0,:,3:].shape)   # exclude M, N, G variables
+    length = res_3d.shape[0]    # number of dates
+
+    for i in range (0, length):
+        res_avg += ( 1.0 * res_3d[i,:,3:] / length )
+
+    # Save average errors and times
+    data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
+    c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
+    filename = "RF-N-test-errors-avg_%s_%s" % (
+        start.strftime("%04Y-%02m-%02d"),
+        stop.strftime("%04Y-%02m-%02d"))
+    results.save_csv( data, c_names, filename )
+
+    # Plot average errors and times
+    results.plot_n_test( data, filename )
 
 
 if __name__ == "__main__":

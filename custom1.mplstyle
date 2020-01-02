@@ -13,7 +13,7 @@ legend.loc : upper right
 legend.fontsize : 14
 
 lines.markersize : 10
-lines.linewidth : 1
+lines.linewidth : 2
 
 figure.subplot.wspace : 0.3
 

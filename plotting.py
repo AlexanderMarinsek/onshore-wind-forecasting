@@ -34,40 +34,105 @@ def plot_features(features):
     plt.close()
 
 
-def plot_forecast(test_labels_V, predictions_V, test_labels_U, predictions_U, figname):
+def plot_forecast(labels, forecast, figname):
     """
     Plot V and U predictions against real values in two subplots. Save plot.
 
-    :param test_labels_V: Real wind V component values.
-    :param predictions_V: Forecasted V values.
-    :param test_labels_U: Real wind U component values.
-    :param predictions_U: Forecasted U values.
     :param figname: string containing desired figure name without extension.
 
     :return: void.
     """
 
-    x = np.arange(0, len(test_labels_V), 1)
+    x = np.arange(0, len(labels), 1)
     fig = plt.figure()
 
-    ax1 = fig.add_subplot(121)
-    ax1.plot(x, test_labels_V, label='actual')
-    ax1.plot(x, predictions_V, label='predicted')
-    ax1.set_title('V wind component')
+    ax1 = fig.add_subplot(111)
+    ax1.plot(x, labels, label='actual')
+    ax1.plot(x, forecast, label='forecast')
+    ax1.set_title("Abs. Wind Speed")
     ax1.set_ylabel("Speed (m/s)")
     ax1.set_xlabel("Time (h)")
     ax1.legend()
 
-    ax2 = fig.add_subplot(122)
-    ax2.plot(x, test_labels_U, label='actual')
-    ax2.plot(x, predictions_U, label='predicted')
-    ax2.set_title('U wind component')
-    ax2.set_ylabel("Speed (m/s)")
-    ax2.set_xlabel("Time (h)")
-    ax2.legend()
-
     fig.savefig("%s.%s" % (figname, extension))
     #fig.show()
+    plt.close()
+
+
+def plot_comparison_forecast(lab_for_2d, names, figname):
+
+    # TODO: Use 'k' index as 3rd dimension
+    # TODO: Prettyfy plot (test it in a separate test module)
+
+    x = np.arange(0, lab_for_2d.shape[1], 1)
+    fig = plt.figure()
+
+    ax1 = fig.add_subplot(111)
+
+    i = k = 0
+    while (i<lab_for_2d.shape[0]):
+        ax1.plot(x, lab_for_2d[i,:], label='actual %s' % names[k])
+        ax1.plot(x, lab_for_2d[i+1,:], label='forecast %s' % names[k])
+        k += 1; i += 2
+
+    ax1.set_title("Abs. Wind Speed")
+    ax1.set_ylabel("Speed (m/s)")
+    ax1.set_xlabel("Time (h)")
+    ax1.legend()
+
+    fig.savefig("%s.%s" % (figname, extension))
+    # fig.show()
+    plt.close()
+
+
+def plot_rf_optimization( data, figname ):
+    x = data[:,0]   # M
+    y = data[:,2]   # G
+
+    fig = plt.figure()
+
+    # TODO: Calculate size relative to data[i, -2]    (rmse)
+    # TODO: Calculate colors relative to data[i, -1]  (time)
+    # TODO: Prettyfy plot (test it in a separate test module)
+
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(x, y)
+    ax1.set_title("RF optimization")
+    ax1.set_xlabel("M")
+    ax1.set_ylabel("G")
+
+    fig.savefig("%s.%s" % (figname, extension))
+    # fig.show()
+    plt.close()
+
+
+def plot_n_test( data, figname ):
+    x = data[:,1]   # N
+
+    fig = plt.figure()
+
+    # TODO: Add legend without gray background lines
+    # TODO: Prettyfy plot (test it in a separate test module)
+
+    ax1 = fig.add_subplot(111)
+
+    ax1.plot(x, data[:, 6], color='C0', linestyle="-", zorder=3, label="RMSE")
+
+    ax1.plot(x, data[:, 5], color='C7', linestyle="--", zorder=2, label="MSE")
+    ax1.plot(x, data[:, 5], color='black', linestyle="-", zorder=1)
+
+    #ax1.plot(x, data[:, 4], color='C7', linestyle="-.", zorder=2, label="MAPE")
+    #ax1.plot(x, data[:, 4], color='black', linestyle="-", zorder=1)
+
+    ax1.plot(x, data[:, 3], color='C7', linestyle=":", zorder=2, label="MAE")
+    ax1.plot(x, data[:, 3], color='black', linestyle="-", zorder=1)
+
+    ax1.set_title("N Variable Test")
+    ax1.set_xlabel("N")
+    ax1.set_ylabel("Error")
+
+    fig.savefig("%s.%s" % (figname, extension))
+    # fig.show()
     plt.close()
 
 

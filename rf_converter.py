@@ -3,7 +3,6 @@ import numpy as np
 from math import sin, cos
 
 
-
 # Constant
 hour_delta = timedelta(hours=1)
 
@@ -85,7 +84,8 @@ def extract_features (data, feat_hour, G):
     return d
 
 
-def get_features_and_labels(data_path, location, start_loc_dt, stop_loc_dt, M, N, G):
+#def get_features_and_labels(data_path, location, start_loc_dt, stop_loc_dt, M, N, G):
+def get_features_and_labels(era5_path, start_loc_dt, stop_loc_dt, M, N, G):
     """
     Get features and labels associated with time and other parameters.
 
@@ -99,6 +99,8 @@ def get_features_and_labels(data_path, location, start_loc_dt, stop_loc_dt, M, N
 
     :return: List of numpy array and two lists [features, label_V, label_U]
     """
+
+    # TODO: Switch features dimensions (equal to other code)
 
     features = []
     label_V = []
@@ -129,8 +131,8 @@ def get_features_and_labels(data_path, location, start_loc_dt, stop_loc_dt, M, N
                 timestamp_to_UTC(feat_time)
 
             # Open NPZ data file
-            path = "%s/%s/%04d/%02d/%02d/data.npz" % \
-                   (data_path, location, feat_year, feat_month, feat_mday)
+            path = "%s/%04d/%02d/%02d/data.npz" % \
+                   (era5_path, feat_year, feat_month, feat_mday)
             # TODO: allow_pickle=True?
             try:
                 data = np.load(path)
@@ -172,8 +174,8 @@ def get_features_and_labels(data_path, location, start_loc_dt, stop_loc_dt, M, N
             timestamp_to_UTC(label_time)
 
         # Fetch NPZ data associated with hourly labels
-        path = "%s/%s/%04d/%02d/%02d/data.npz" % \
-               (data_path, location, label_year, label_month, label_mday)
+        path = "%s/%04d/%02d/%02d/data.npz" % \
+               (era5_path, label_year, label_month, label_mday)
         try:
             data = np.load(path)
         except FileNotFoundError:

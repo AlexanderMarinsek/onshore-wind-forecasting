@@ -60,14 +60,9 @@ class Results:
             log_file.write("%s\n" % text)   # add new line, like in print()
 
 
-    def save_forecast(self, test_labels_V, predictions_V, test_labels_U, predictions_U, filename):
+    def save_forecast(self, labels, forecast, filename):
         """
         Save forecast results and real data to CSV file.
-
-        :param test_labels_V: Real wind V component values.
-        :param predictions_V: Forecasted V values.
-        :param test_labels_U: Real wind U component values.
-        :param predictions_U: Forecasted U values.
         """
 
         filename = "%s/%s/%s.csv" % (self.results_dir, self.results_name, filename)
@@ -75,30 +70,85 @@ class Results:
             writer = csv.writer(csv_file, delimiter=',')
             # Write column names
             writer.writerow(
-                ["test_labels_V", "predictions_V",
-                 "test_labels_U", "predictions_U"])
+                ["labels", "forecast"])
             # Write data
-            for i in range(0,len(test_labels_V)):
-                writer.writerow([
-                    test_labels_V[i], predictions_V[i],
-                    test_labels_U[i], predictions_U[i]])
+            for i in range(0,len(labels)):
+                writer.writerow([labels[i], forecast[i]])
 
 
-    def plot_forecast(self, test_labels_V, predictions_V, test_labels_U, predictions_U, figname):
+    def save_comparison_forecast(self, lab_for_2d, names, filename):
+        """
+        Save forecast results and real data to CSV file.
+        """
+
+        name_labels = []
+        for name in names:
+            name_labels.append("labels-%s" % name)
+            name_labels.append("forecast-%s" % name)
+
+        filename = "%s/%s/%s.csv" % (self.results_dir, self.results_name, filename)
+        with open(filename, 'w') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            # Write column names
+            writer.writerow(name_labels)
+            # Write data
+            for i in range(0, lab_for_2d.shape[1]):
+                writer.writerow(lab_for_2d[:,i])
+
+
+    def save_csv(self, data, c_names, filename):
+        filename = "%s/%s/%s.csv" % (self.results_dir, self.results_name, filename)
+        with open(filename, 'w') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            # Write column names
+            writer.writerow(c_names)
+            # Write data
+            for i in range(0,len(data)):
+                writer.writerow(data[i])
+
+
+    def save_npz(self, data, filename):
+
+        filename = "%s/%s/%s.npz" % (self.results_dir, self.results_name, filename)
+        np.savez(filename, data)
+
+
+    def plot_forecast(self, labels, forecast, figname):
         """
         Plot V and U predictions against real values in two subplots. Save plot.
-
-        :param test_labels_V: Real wind V component values.
-        :param predictions_V: Forecasted V values.
-        :param test_labels_U: Real wind U component values.
-        :param predictions_U: Forecasted U values.
-        :param figname: string containing desired figure name without extension.
 
         :return: void.
         """
 
         figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_forecast(test_labels_V, predictions_V, test_labels_U, predictions_U, figname)
+        plot_forecast(labels, forecast, figname)
+
+
+    def plot_comparison_forecast(self, lab_for_2d, names, filename):
+        """
+        Plot V and U predictions against real values in two subplots. Save plot.
+
+        :return: void.
+        """
+
+        figname = "%s/%s/%s" % (self.results_dir, self.results_name, filename)
+        plot_comparison_forecast( lab_for_2d, names, figname )
+
+
+    def plot_rf_optimization(self, data, figname):
+        """
+        """
+
+        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
+        plot_rf_optimization(data, figname)
+
+
+    def plot_n_test(self, data, figname):
+        """
+        """
+
+        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
+        plot_n_test(data, figname)
 
 
     def plot_RF_M_scores (self, M_arr, bs_arr, ss_arr, bs_labels, ss_labels, figname):
