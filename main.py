@@ -77,7 +77,7 @@ G_default = 0
 
 # Optimal forecast values
 M_opt = 3
-N_opt = 14
+N_opt = 24
 G_opt = 3
 
 
@@ -111,66 +111,66 @@ def main():
 
 
         # Iterate M ############################################################
-        M = M_default
-        N = N_default
-        G = G_default
-
-        RF_M_score = rf.iterate_M(results, location, data_path, start, stop, M_arr, N, G)
-        bs_labels = ["bs_V_0_M", "bs_V_tot_M", "bs_U_0_M", "bs_U_tot_M"]
-        ss_labels = ["ss_V_0_M", "ss_V_tot_M", "ss_U_0_M", "ss_U_tot_M"]
-        figname = "RF-M-scores_%s_%s_M_%d_%d" % (
-            start.strftime("%04Y-%02m-%02d"),
-            stop.strftime("%04Y-%02m-%02d"),
-            N, G)
-        results.plot_RF_M_scores(M_arr, RF_M_score[:4, :], RF_M_score[4:8, :],
-            bs_labels, ss_labels, figname)
-
-        if len(RF_M_score_all) > 0:
-            RF_M_score_all = np.concatenate((RF_M_score_all, RF_M_score), axis=0)
-        else:
-            RF_M_score_all = RF_M_score
-
-
-        # Iterate N ############################################################
-        M = M_default
-        N = N_default
-        G = G_default
-
-        RF_N_score = rf.iterate_N(results, location, data_path, start, stop, M, N_arr, G)
-        bs_labels = ["bs_V_0_N", "bs_V_tot_N", "bs_U_0_N", "bs_U_tot_N"]
-        ss_labels = ["ss_V_0_N", "ss_V_tot_N", "ss_U_0_N", "ss_U_tot_N"]
-        figname = "RF-N-scores_%s_%s_%d_N_%d" % (
-            start.strftime("%04Y-%02m-%02d"),
-            stop.strftime("%04Y-%02m-%02d"),
-            M_default, G_default)
-        results.plot_RF_N_scores(N_arr, RF_N_score[:4, :], RF_N_score[4:8, :],
-            bs_labels, ss_labels, figname)
-
-        if len(RF_N_score_all) > 0:
-            RF_N_score_all = np.concatenate((RF_N_score_all, RF_N_score), axis=0)
-        else:
-            RF_N_score_all = RF_N_score
-
-
-        # Iterate G ############################################################
-        M = M_default
-        N = N_default
-        G = G_default
-
-        RF_G_score = rf.iterate_G(results, location, data_path, start, stop, M, N, G_arr)
-        bs_labels = ["bs_V_0_G", "bs_V_tot_G", "bs_U_0_G", "bs_U_tot_G"]
-        ss_labels = ["ss_V_0_G", "ss_V_tot_G", "ss_U_0_G", "ss_U_tot_G"]
-        figname = "RF-G-scores_%s_%s_%d_%d_G" % (
-            start.strftime("%04Y-%02m-%02d"),
-            stop.strftime("%04Y-%02m-%02d"),
-            N_default, M_default)
-        results.plot_RF_N_scores(G_arr, RF_G_score[:4, :], RF_G_score[4:8, :],
-            bs_labels, ss_labels, figname)
-
-        if len(RF_G_score_all) > 0:
-            RF_G_score_all = np.concatenate((RF_G_score_all, RF_G_score), axis=0)
-        else:
-            RF_G_score_all = RF_G_score
+        # M = M_default
+        # N = N_default
+        # G = G_default
+        #
+        # RF_M_score = rf.iterate_M(results, location, data_path, start, stop, M_arr, N, G)
+        # bs_labels = ["bs_V_0_M", "bs_V_tot_M", "bs_U_0_M", "bs_U_tot_M"]
+        # ss_labels = ["ss_V_0_M", "ss_V_tot_M", "ss_U_0_M", "ss_U_tot_M"]
+        # figname = "RF-M-scores_%s_%s_M_%d_%d" % (
+        #     start.strftime("%04Y-%02m-%02d"),
+        #     stop.strftime("%04Y-%02m-%02d"),
+        #     N, G)
+        # results.plot_RF_M_scores(M_arr, RF_M_score[:4, :], RF_M_score[4:8, :],
+        #     bs_labels, ss_labels, figname)
+        #
+        # if len(RF_M_score_all) > 0:
+        #     RF_M_score_all = np.concatenate((RF_M_score_all, RF_M_score), axis=0)
+        # else:
+        #     RF_M_score_all = RF_M_score
+        #
+        #
+        # # Iterate N ############################################################
+        # M = M_default
+        # N = N_default
+        # G = G_default
+        #
+        # RF_N_score = rf.iterate_N(results, location, data_path, start, stop, M, N_arr, G)
+        # bs_labels = ["bs_V_0_N", "bs_V_tot_N", "bs_U_0_N", "bs_U_tot_N"]
+        # ss_labels = ["ss_V_0_N", "ss_V_tot_N", "ss_U_0_N", "ss_U_tot_N"]
+        # figname = "RF-N-scores_%s_%s_%d_N_%d" % (
+        #     start.strftime("%04Y-%02m-%02d"),
+        #     stop.strftime("%04Y-%02m-%02d"),
+        #     M_default, G_default)
+        # results.plot_RF_N_scores(N_arr, RF_N_score[:4, :], RF_N_score[4:8, :],
+        #     bs_labels, ss_labels, figname)
+        #
+        # if len(RF_N_score_all) > 0:
+        #     RF_N_score_all = np.concatenate((RF_N_score_all, RF_N_score), axis=0)
+        # else:
+        #     RF_N_score_all = RF_N_score
+        #
+        #
+        # # Iterate G ############################################################
+        # M = M_default
+        # N = N_default
+        # G = G_default
+        #
+        # RF_G_score = rf.iterate_G(results, location, data_path, start, stop, M, N, G_arr)
+        # bs_labels = ["bs_V_0_G", "bs_V_tot_G", "bs_U_0_G", "bs_U_tot_G"]
+        # ss_labels = ["ss_V_0_G", "ss_V_tot_G", "ss_U_0_G", "ss_U_tot_G"]
+        # figname = "RF-G-scores_%s_%s_%d_%d_G" % (
+        #     start.strftime("%04Y-%02m-%02d"),
+        #     stop.strftime("%04Y-%02m-%02d"),
+        #     M_default, N_default)
+        # results.plot_RF_N_scores(G_arr, RF_G_score[:4, :], RF_G_score[4:8, :],
+        #     bs_labels, ss_labels, figname)
+        #
+        # if len(RF_G_score_all) > 0:
+        #     RF_G_score_all = np.concatenate((RF_G_score_all, RF_G_score), axis=0)
+        # else:
+        #     RF_G_score_all = RF_G_score
 
 
         # Run baseline #########################################################

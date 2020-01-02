@@ -54,7 +54,8 @@ def run_rf (results, location, relative_path, start_loc_dt, stop_loc_dt, M, N, G
     # test_labels_U = label_U[-24-1:-24+N-1]
 
     # Initiate random forest
-    rf = RandomForestRegressor(n_estimators=1000, random_state=1)
+    # rf = RandomForestRegressor(n_estimators=1000, random_state=1)
+    rf = RandomForestRegressor(n_estimators=10, random_state=1)
 
     # Tailor RF to V component and create forecast
     rf.fit(train_features_V, train_labels_V)
