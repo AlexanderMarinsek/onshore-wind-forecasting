@@ -13,9 +13,11 @@ class Rf:
         self.set_vars()
 
 
-    def set_parameters(self, nEstimators=100, criterion='mse'):
+    def set_parameters(self, nEstimators=100, criterion='mse', max_depth=None, max_features='auto'):
         self.nEstimators = nEstimators
         self.criterion = criterion
+        self.max_depth = max_depth
+        self.max_features = max_features
 
 
     def set_vars(self, M=1, N=24, G=0):
@@ -50,7 +52,7 @@ class Rf:
 
         # Initiate random forest
         rf = RandomForestRegressor(
-            n_estimators=self.nEstimators, criterion=self.criterion, random_state=1)
+            n_estimators=self.nEstimators, criterion=self.criterion, random_state=1, max_depth=self.max_depth, max_features=self.max_features)
 
         fit_time = datetime.now()    # Timer 2
         # Build forest of trees based on training data
