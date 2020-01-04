@@ -67,8 +67,8 @@ def run_rf (results, location, relative_path, start_loc_dt, stop_loc_dt, M, N, G
 
     # Plot and save forecasts
     filename = "RF-forecast_%s_%s_%d_%d_%d" % (
-        start_loc_dt.strftime("%04Y-%02m-%02d"),
-        stop_loc_dt.strftime("%04Y-%02m-%02d"),
+        start_loc_dt.strftime("%F"),
+        stop_loc_dt.strftime("%F"),
         M, N, G)
     results.plot_forecast(test_labels_V, predictions_V, test_labels_U,
                           predictions_U, filename)
@@ -99,7 +99,7 @@ def iterate_M(results, location, data_path, start_loc_dt, stop_loc_dt, M_values,
 
     for M in M_values:
 
-        now = datetime.now().strftime("%04Y-%02m-%02dT%02H:%02M:%02S")
+        now = datetime.now().strftime("%FT%02H:%02M:%02S")
         text = "* New M (%s): %d" % (now, M)
         print (text)
         results.append_log(text)
@@ -146,7 +146,7 @@ def iterate_N(results, location, data_path, start_loc_dt, stop_loc_dt, M, N_valu
 
     for N in N_values:
 
-        now = datetime.now().strftime("%04Y-%02m-%02dT%02H:%02M:%02S")
+        now = datetime.now().strftime("%FT%02H:%02M:%02S")
         text = "* New N (%s): %d" % (now, N)
         print (text)
         results.append_log(text)
@@ -193,7 +193,7 @@ def iterate_G(results, location, data_path, start_loc_dt, stop_loc_dt, M, N, G_v
 
     for G in G_values:
 
-        now = datetime.now().strftime("%04Y-%02m-%02dT%02H:%02M:%02S")
+        now = datetime.now().strftime("%FT%02H:%02M:%02S")
         text = "* New G (%s): %d" % (now, G)
         print (text)
         results.append_log(text)
@@ -238,7 +238,7 @@ def optimal_forecast(results, location, data_path, start_loc_dt, stop_loc_dt, M,
     bs = []
     ss = []
 
-    now = datetime.now().strftime("%04Y-%02m-%02dT%02H:%02M:%02S")
+    now = datetime.now().strftime("%FT%02H:%02M:%02S")
     text = "* New optimal RF forecast (%s)" % (now)
     print (text)
     results.append_log(text)

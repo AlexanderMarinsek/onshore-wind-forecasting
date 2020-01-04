@@ -12,6 +12,8 @@ class Bl:
 
     def run(self, start_loc_dt, stop_loc_dt):
 
+        run_time = datetime.now()    # Timer 1
+
         start_loc_dt = stop_loc_dt - timedelta(hours=48)
 
         # label is target data column, features are all other data columns
@@ -30,7 +32,17 @@ class Bl:
         # Create forecast based on test features
         forecast = train_labels
 
-        return [0, test_labels, forecast]
+        # Measure elapsed time
+        end_time = datetime.now()
+
+        # Calculate elapsed times [Total time, fitting time, forecasting time]
+        t = [
+            (end_time - run_time).total_seconds(),
+            0,
+            0
+        ]
+
+        return [t, test_labels, forecast]
 
 
 def main():

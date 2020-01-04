@@ -20,7 +20,7 @@ def run_baseline(results, location, data_path, start_loc_dt, stop_loc_dt):
     :return: Numpy array of score results obtained during iteration.
     """
 
-    now = datetime.now().strftime("%04Y-%02m-%02dT%02H:%02M:%02S")
+    now = datetime.now().strftime("%FT%02H:%02M:%02S")
     text = "* New 24h Baseline (%s)" % (now)
     print(text)
     results.append_log(text)
@@ -44,8 +44,8 @@ def run_baseline(results, location, data_path, start_loc_dt, stop_loc_dt):
 
     # Plot and save forecasts
     filename = "BL-forecast_24h_%s_%s" % (
-        start_loc_dt.strftime("%04Y-%02m-%02d"),
-        stop_loc_dt.strftime("%04Y-%02m-%02d"))
+        start_loc_dt.strftime("%F"),
+        stop_loc_dt.strftime("%F"))
     results.plot_forecast(test_labels_V, predictions_V, test_labels_U,
                           predictions_U, filename)
     results.save_forecast(test_labels_V, predictions_V, test_labels_U,

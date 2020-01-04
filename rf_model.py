@@ -30,6 +30,8 @@ class Rf:
 
     def run(self, start_loc_dt, stop_loc_dt):
 
+        run_time = datetime.now()    # Timer 1
+
         # label is target data column, features are all other data columns
         features, label_V, label_U =  get_features_and_labels(
             self.era5_path, start_loc_dt, stop_loc_dt, self.M, self.N, self.G)
@@ -50,32 +52,56 @@ class Rf:
         rf = RandomForestRegressor(
             n_estimators=self.nEstimators, criterion=self.criterion, random_state=1)
 
+        fit_time = datetime.now()    # Timer 2
         # Build forest of trees based on training data
         rf.fit(train_features, train_labels)
 
+        forecast_time = datetime.now()    # Timer 3
         # Create forecast based on test features
         forecast = rf.predict(test_features)
 
         # Measure elapsed time
-        rf_stop_time = datetime.now()
-        elapsed = rf_stop_time - rf_start_time
-        t = elapsed.total_seconds()
+        end_time = datetime.now()
+
+        # Calculate elapsed times [Total time, fitting time, forecasting time]
+        t = [
+            (end_time - run_time).total_seconds(),
+            (forecast_time - fit_time).total_seconds(),
+            (end_time - forecast_time).total_seconds()
+        ]
 
         return [t, test_labels, forecast]
 
 
 def main():
     from pytz import timezone
+    from results import Results
 
     start_dt = datetime(2018, 1, 1, 0)
-    stop_dt = datetime(2018, 1, 5, 0)
+    stop_dt = datetime(2018, 1, 15, 0)
 
     tz = timezone("Europe/Bucharest")
     start_loc_dt = tz.localize(start_dt)
     stop_loc_dt = tz.localize(stop_dt)
 
+    # Set up model
     rf = Rf("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "RF")
-    rf.run(start_loc_dt, stop_loc_dt)
+    M = 1; N = 24; G = 0;
+    rf.set_vars(M, N, G)
+
+    # Create forecast
+    [t, test_labels, forecast] = rf.run(start_loc_dt, stop_loc_dt)
+
+    date_str = datetime.utcnow().strftime("%F")
+    results = Results("./Results", "%sx01" % date_str)
+
+    filename = "RF-forecast_%s_%s_%d_%d_%d" % (
+        start_loc_dt.strftime("%F"),
+        stop_loc_dt.strftime("%F"),
+        M, N, G)
+    results.plot_forecast(test_labels, forecast, filename)
+
+    print (t)
 
 
 if __name__ == "__main__":

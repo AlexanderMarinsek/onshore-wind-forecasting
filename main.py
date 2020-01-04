@@ -1,6 +1,7 @@
 from results import Results
-from rf_model import Rf
 from bl_model import Bl
+from rf_model import Rf
+from svr_model import Svr
 from evaluate import calc_errors
 
 from datetime import datetime, timedelta
@@ -60,7 +61,7 @@ def main():
     stop_loc_dt = [tz.localize(s) for s in stop_dt]
 
     # Initiate new results directory and global object
-    date_str = datetime.utcnow().strftime("%04Y-%02m-%02d")
+    date_str = datetime.utcnow().strftime("%F")
     results = Results("./Results", "%sx01" % date_str)
 
     # M: Number of preceeding hours used in forecast     (CPU heavy)
@@ -79,13 +80,13 @@ def main():
     models = [
         Bl("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "BL"),
         Rf("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "RF"),
-        Rf("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "rf")   # Put SVR here
+        Svr("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "SVR")
     ]
 
 
 
     initial_time = datetime.now()
-    text = "Begin: %s" % initial_time.strftime("%04Y-%02m-%02dT%02H:%02M:%02S")
+    text = "Begin: %s" % initial_time.strftime("%FT%02H:%02M:%02S")
     print(text)
     results.append_log(text)
 
@@ -93,7 +94,7 @@ def main():
     print (text)
     results.append_log(text)
 
-    models[1].set_vars(3, 24, 2)
+    # models[1].set_vars(3, 24, 2)
     # tune_rf( models[1], start_loc_dt, stop_loc_dt, M, N, G, results )
 
     #names = [models[int(i/2)].name for i in range(0, len(models)*2)]
@@ -116,7 +117,7 @@ def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
 
             [t, labels, forecast] = model.run( start, stop )
             errors = calc_errors(labels, forecast)
-            res_tmp = np.array([np.concatenate((errors, [t]), axis=0)])
+            res_tmp = np.array([np.concatenate((errors, t), axis=0)])
 
             if len(lab_for_2d) > 0:
                 lab_for_2d = np.concatenate((lab_for_2d, np.array([labels, forecast])), axis=0)
@@ -126,8 +127,8 @@ def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
                 res_2d = res_tmp
 
         filename = "Comparison-forecast_%s_%s" % (
-            start.strftime("%04Y-%02m-%02d"),
-            stop.strftime("%04Y-%02m-%02d"))
+            start.strftime("%F"),
+            stop.strftime("%F"))
         results.save_comparison_forecast(lab_for_2d, names, filename)
         results.plot_comparison_forecast(lab_for_2d, names, filename)
 
@@ -138,8 +139,8 @@ def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
 
     # Save full (3D) collection of errors and times
     filename = "Comparison-errors_%s_%s" % (
-        start.strftime("%04Y-%02m-%02d"),
-        stop.strftime("%04Y-%02m-%02d"))
+        start.strftime("%F"),
+        stop.strftime("%F"))
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
@@ -151,7 +152,8 @@ def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
 
     # Save average errors and times
     data = np.concatenate( ( np.array([names]).T, res_avg ), axis=1 )
-    c_names = ["Model", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
+    c_names = ["Model", "MAE", "MAPE", "MSE", "RMSE",
+               "t_tot [s]", "t_fit [s]", "t_for [s]"]
     filename = "Comparison-results-avg"
     results.save_csv(data, c_names, filename)
 
@@ -185,8 +187,8 @@ def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
                     [t, labels, forecast] = model.run(start, stop)
 
                     filename = "RF-forecast_%s_%s_%d_%d_%d" % (
-                        start.strftime("%04Y-%02m-%02d"),
-                        stop.strftime("%04Y-%02m-%02d"),
+                        start.strftime("%F"),
+                        stop.strftime("%F"),
                         m, n, g)
                     results.save_forecast(labels, forecast, filename)
                     results.plot_forecast(labels, forecast, filename)
@@ -208,8 +210,8 @@ def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
 
     # Save full (3D) collection of errors and times
     filename = "RF-optimization-errors%s_%s" % (
-        start.strftime("%04Y-%02m-%02d"),
-        stop.strftime("%04Y-%02m-%02d"))
+        start.strftime("%F"),
+        stop.strftime("%F"))
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
@@ -223,8 +225,8 @@ def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
     c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
     filename = "RF-optimization-errors-avg_%s_%s" % (
-        start.strftime("%04Y-%02m-%02d"),
-        stop.strftime("%04Y-%02m-%02d"))
+        start.strftime("%F"),
+        stop.strftime("%F"))
     results.save_csv( data, c_names, filename )
 
     # Plot average errors and times
@@ -271,8 +273,8 @@ def test_rf_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
             [t, labels, forecast] = model.run(start, stop)
 
             filename = "RF-forecast_%s_%s_%d_%d_%d" % (
-                start.strftime("%04Y-%02m-%02d"),
-                stop.strftime("%04Y-%02m-%02d"),
+                start.strftime("%F"),
+                stop.strftime("%F"),
                 m, n, g)
             results.save_forecast(labels, forecast, filename)
             results.plot_forecast(labels, forecast, filename)
@@ -293,8 +295,8 @@ def test_rf_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
 
     # Save full (3D) collection of errors and times
     filename = "RF-N-test-errors_%s_%s" % (
-        start.strftime("%04Y-%02m-%02d"),
-        stop.strftime("%04Y-%02m-%02d"))
+        start.strftime("%F"),
+        stop.strftime("%F"))
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
@@ -308,8 +310,8 @@ def test_rf_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
     c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
     filename = "RF-N-test-errors-avg_%s_%s" % (
-        start.strftime("%04Y-%02m-%02d"),
-        stop.strftime("%04Y-%02m-%02d"))
+        start.strftime("%F"),
+        stop.strftime("%F"))
     results.save_csv( data, c_names, filename )
 
     # Plot average errors and times
