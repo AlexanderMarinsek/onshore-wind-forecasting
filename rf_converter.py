@@ -89,8 +89,7 @@ def get_features_and_labels(era5_path, start_loc_dt, stop_loc_dt, M, N, G):
     """
     Get features and labels associated with time and other parameters.
 
-    :param data_path: Path to ERA5 data storage.
-    :param location: Location directory name.
+    :param era5_path: Path to ERA5 data storage.
     :param start_loc_dt: Start time, localized (aware) datetime object.
     :param stop_loc_dt: Stop time, localized (aware) datetime object.
     :param M: Number of preceeding hours used in forecast.
