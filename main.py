@@ -215,7 +215,8 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
 
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
-        res_2d = lab_for_2d = []
+        res_2d = []
+        lab_for_2d = []
 
         for model in models:
 
