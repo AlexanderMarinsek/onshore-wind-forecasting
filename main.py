@@ -4,6 +4,8 @@ from rf_model import Rf
 from svr_model import Svr
 from evaluate import calc_errors
 
+from turbines import *
+
 from datetime import datetime, timedelta
 from pytz import timezone
 import numpy as np
@@ -94,18 +96,120 @@ def main():
     print (text)
     results.append_log(text)
 
-    # models[1].set_vars(3, 24, 2)
-    # tune_rf( models[1], start_loc_dt, stop_loc_dt, M, N, G, results )
+    # results.results_name = "2020-01-05x05"
 
-    #names = [models[int(i/2)].name for i in range(0, len(models)*2)]
-    names = [model.name for model in models]
-    compare_models( models, names, start_loc_dt, stop_loc_dt, results )
+    # models[1].set_vars(3, 24, 2)
+    # tune_model_vars( models[1], start_loc_dt, stop_loc_dt, M, N, G, results )
+
+    compare_models( models, start_loc_dt, stop_loc_dt, results )
 
     # N = [n for n in range(1,25)]
-    # test_rf_n_variable( models[1], start_loc_dt, stop_loc_dt, N, results )
+    # test_model_n_variable( models[1], start_loc_dt, stop_loc_dt, N, results )
+
+    extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, results )
 
 
-def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
+def extrapolate( v0, h0, h, z0 ):
+    v = v0 * ( np.log(h/z0) / np.log(h0/z0) )
+    return v
+
+def read_forecast( filename ):
+    import csv
+    filename = "%s.csv" % filename
+    forecast = []
+    labels = []
+    with open(filename) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        i = 0
+        for row in csv_reader:
+            if i > 0:
+                labels.append(float(row[0]))
+                forecast.append(float(row[1]))
+            i += 1
+
+    return [ np.array(labels), np.array(forecast) ]
+
+
+def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, results ):
+
+    names = [model.name for model in models]
+
+    turbine = Turbine("Vestas V90", 10, calc_power_vestas_v90_3mw)
+
+    [h0, h, z0] = [10, 100, 0.2]
+
+    res_3d = []
+
+    for start, stop in zip(start_loc_dt, stop_loc_dt):
+
+        res_2d = []
+        power_2d = []
+
+        for model in models:
+
+            [m, n, g] = model.get_vars()
+            filename = "%s/%s-forecast_%s_%s_%d_%d_%d" % (
+                results.get_full_path(),
+                model.name,
+                start.strftime("%F"),
+                stop.strftime("%F"),
+                m, n, g)
+            [labels_10, forecast_10] = read_forecast(filename)
+
+            [labels_100, forecast_100] = extrapolate(np.array([labels_10, forecast_10]), h0, h, z0)
+
+            labels_p = turbine.calc_power(labels_100)
+            forecast_p = turbine.calc_power(forecast_100)
+
+            errors_10 = calc_errors(labels_10, forecast_10)
+            errors_100 = calc_errors(labels_100, forecast_100)
+            errors_p = calc_errors(labels_p, forecast_p)
+
+            res_tmp = np.array([errors_10, errors_100, errors_p])
+
+            if len(res_2d) > 0:
+                power_2d = np.concatenate((power_2d, np.array([labels_p, forecast_p])), axis=0)
+                res_2d = np.concatenate((res_2d, res_tmp), axis=0)
+            else:
+                power_2d = np.array([labels_p, forecast_p])
+                res_2d = res_tmp
+
+        filename = "Power-forecast_%s_%s" % (
+            start.strftime("%F"),
+            stop.strftime("%F"))
+        results.plot_power_forecast(power_2d, names, filename)
+
+        if len(res_3d) > 0:
+            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
+        else:
+            res_3d = np.array([res_2d])
+
+    # Save full (3D) collection of errors and times
+    filename = "Power-errors_%s_%s" % (
+        start.strftime("%F"),
+        stop.strftime("%F"))
+    results.save_npz(res_3d, filename)
+
+    # Calculate average errors and times
+    res_avg = np.zeros(res_3d[0, :, :].shape)
+    length = res_3d.shape[0]  # number of dates
+
+    for i in range(0, length):
+        res_avg += (1.0 * res_3d[i, :, :] / length)
+
+    # Save average errors and times
+    names_ext = np.array([np.repeat(names, 3)]).T
+    titles_ext = np.array([["v10", "v100", "p100"] * len(names)]).T
+    data = np.concatenate( ( names_ext, titles_ext, res_avg ), axis=1 )
+    c_names = ["Model", "Title","MAE", "MAPE", "MSE", "RMSE"]
+    filename = "Power-results-avg"
+    results.save_csv(data, c_names, filename)
+
+    a = 1
+
+def compare_models( models, start_loc_dt, stop_loc_dt, results ):
+
+    names = [model.name for model in models]
 
     res_3d = []
 
@@ -118,6 +222,15 @@ def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
             [t, labels, forecast] = model.run( start, stop )
             errors = calc_errors(labels, forecast)
             res_tmp = np.array([np.concatenate((errors, t), axis=0)])
+
+            [m, n, g] = model.get_vars()
+            filename = "%s-forecast_%s_%s_%d_%d_%d" % (
+                model.name,
+                start.strftime("%F"),
+                stop.strftime("%F"),
+                m, n, g)
+            results.save_forecast(labels, forecast, filename)
+            results.plot_forecast(labels, forecast, filename)
 
             if len(lab_for_2d) > 0:
                 lab_for_2d = np.concatenate((lab_for_2d, np.array([labels, forecast])), axis=0)
@@ -144,7 +257,7 @@ def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
-    res_avg = np.zeros(res_3d[0, :, :].shape)  # exclude M, N, G variables
+    res_avg = np.zeros(res_3d[0, :, :].shape)
     length = res_3d.shape[0]  # number of dates
 
     for i in range(0, length):
@@ -158,11 +271,11 @@ def compare_models( models, names, start_loc_dt, stop_loc_dt, results ):
     results.save_csv(data, c_names, filename)
 
 
-def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
+def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     """
-    Based on forecast errors, set optimal M, N, G RF variables.
+    Based on forecast errors, set optimal M, N, G variables for the model.
 
-    :param model: RF model based on custom class.
+    :param model: model based on custom class.
     :param start_loc_dt: Start time, localized (aware) datetime object.
     :param stop_loc_dt: Stop time, localized (aware) datetime object.
     :param M: Number of preceeding hours used in forecast.
@@ -186,7 +299,8 @@ def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
                     model.set_vars(m, n, g)     # Set M, N, G
                     [t, labels, forecast] = model.run(start, stop)
 
-                    filename = "RF-forecast_%s_%s_%d_%d_%d" % (
+                    filename = "%s-forecast_%s_%s_%d_%d_%d" % (
+                        model.name,
                         start.strftime("%F"),
                         stop.strftime("%F"),
                         m, n, g)
@@ -209,7 +323,8 @@ def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
 
 
     # Save full (3D) collection of errors and times
-    filename = "RF-optimization-errors%s_%s" % (
+    filename = "%s-optimization-errors%s_%s" % (
+        model.name,
         start.strftime("%F"),
         stop.strftime("%F"))
     results.save_npz(res_3d, filename)
@@ -224,7 +339,8 @@ def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     # Save average errors and times
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
     c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
-    filename = "RF-optimization-errors-avg_%s_%s" % (
+    filename = "%s-optimization-errors-avg_%s_%s" % (
+        model.name,
         start.strftime("%F"),
         stop.strftime("%F"))
     results.save_csv( data, c_names, filename )
@@ -240,17 +356,17 @@ def tune_rf(model, start_loc_dt, stop_loc_dt, M, N, G, results):
             e_opt = data[i, -2]
             [M_opt, N_opt, G_opt] = data[i, 0:3]
 
-    # Tune RF to optimal parameters
+    # Tune model according to optimal variables
     model.set_vars(int(M_opt), int(N_opt), int(G_opt))
 
 
 
 
-def test_rf_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
+def test_model_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
     """
-    Collect error data of RF forecast for different N values.
+    Collect error data of model forecast for different N values.
 
-    :param model: RF model based on custom class.
+    :param model: model based on custom class.
     :param start_loc_dt: Start time, localized (aware) datetime object.
     :param stop_loc_dt: Stop time, localized (aware) datetime object.
     :param N: Number of forecasted hours.
@@ -272,7 +388,8 @@ def test_rf_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
             model.set_vars(m, n, g)  # Set M, N, G
             [t, labels, forecast] = model.run(start, stop)
 
-            filename = "RF-forecast_%s_%s_%d_%d_%d" % (
+            filename = "%s-forecast_%s_%s_%d_%d_%d" % (
+                model.name,
                 start.strftime("%F"),
                 stop.strftime("%F"),
                 m, n, g)
@@ -294,7 +411,8 @@ def test_rf_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
             res_3d = np.array([res_2d])
 
     # Save full (3D) collection of errors and times
-    filename = "RF-N-test-errors_%s_%s" % (
+    filename = "%s-N-test-errors_%s_%s" % (
+        model.name,
         start.strftime("%F"),
         stop.strftime("%F"))
     results.save_npz(res_3d, filename)
@@ -309,7 +427,8 @@ def test_rf_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
     # Save average errors and times
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
     c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
-    filename = "RF-N-test-errors-avg_%s_%s" % (
+    filename = "%s-N-test-errors-avg_%s_%s" % (
+        model.name,
         start.strftime("%F"),
         stop.strftime("%F"))
     results.save_csv( data, c_names, filename )

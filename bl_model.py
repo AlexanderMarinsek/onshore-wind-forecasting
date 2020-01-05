@@ -8,6 +8,25 @@ class Bl:
     def __init__(self, era5_path, name):
         self.era5_path = era5_path
         self.name = name
+        self.set_parameters()
+        self.set_vars()
+
+
+    def set_parameters(self, nEstimators=100, criterion='mse', max_depth=None, max_features='auto'):
+        self.nEstimators = nEstimators
+        self.criterion = criterion
+        self.max_depth = max_depth
+        self.max_features = max_features
+
+
+    def set_vars(self, M=1, N=24, G=0):
+        self.M = M
+        self.N = N
+        self.G = G
+
+
+    def get_vars(self):
+        return [self.M, self.N, self.G]
 
 
     def run(self, start_loc_dt, stop_loc_dt):
@@ -18,7 +37,7 @@ class Bl:
 
         # label is target data column, features are all other data columns
         features, label_V, label_U =  get_features_and_labels(
-            self.era5_path, start_loc_dt, stop_loc_dt, 1, 24, 0)
+            self.era5_path, start_loc_dt, stop_loc_dt, self.M, self.N, self.G)
 
         # Calculate speed (abs size) - math.sqrt has problems with numpy arrays
         labels = (label_V**2 + label_U**2)**(1/2)

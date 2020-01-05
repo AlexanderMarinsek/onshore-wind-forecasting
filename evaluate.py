@@ -17,7 +17,12 @@ def calc_mape(actual, forecast):
     sum = 0
 
     for i in range(0, length):
-        sum += abs( float( forecast[i] - actual[i] ) / actual[i] )
+        if actual[i] != 0:
+            error = abs( float( forecast[i] - actual[i] ) / actual[i] )
+        else:
+            error = 0
+
+        sum+=error
 
     return float(sum) / length * 100
 

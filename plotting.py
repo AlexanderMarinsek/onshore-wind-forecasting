@@ -85,6 +85,32 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
     plt.close()
 
 
+def plot_power_forecast(power_2d, names, figname):
+
+    # TODO: Add 2nd subplot - WT curve
+    # TODO: Prettyfy plot (test it in a separate test module)
+
+    x = np.arange(0, power_2d.shape[1], 1)
+    fig = plt.figure()
+
+    ax1 = fig.add_subplot(111)
+
+    i = k = 0
+    while (i<power_2d.shape[0]):
+        ax1.plot(x, power_2d[i,:], label='actual %s' % names[k])
+        ax1.plot(x, power_2d[i+1,:], label='forecast %s' % names[k])
+        k += 1; i += 2
+
+    ax1.set_title("WT Power Production")
+    ax1.set_ylabel("Power (kW)")
+    ax1.set_xlabel("Time (h)")
+    ax1.legend()
+
+    fig.savefig("%s.%s" % (figname, extension))
+    # fig.show()
+    plt.close()
+
+
 def plot_rf_optimization( data, figname ):
     x = data[:,0]   # M
     y = data[:,2]   # G

@@ -50,6 +50,10 @@ class Results:
         os.makedirs(path)
 
 
+    def get_full_path(self):
+        return ("%s/%s" % (self.results_dir, self.results_name))
+
+
     def append_log(self, text):
         """
         Append text to log.
@@ -96,6 +100,26 @@ class Results:
                 writer.writerow(lab_for_2d[:,i])
 
 
+    def save_power_forecast(self, lab_for_2d, names, filename):
+        """
+        Save forecast results and real data to CSV file.
+        """
+
+        name_labels = []
+        # for name in names:
+        #     name_labels.append("labels-%s" % name)
+        #     name_labels.append("forecast-%s" % name)
+        #
+        # filename = "%s/%s/%s.csv" % (self.results_dir, self.results_name, filename)
+        # with open(filename, 'w') as csv_file:
+        #     writer = csv.writer(csv_file, delimiter=',')
+        #     # Write column names
+        #     writer.writerow(name_labels)
+        #     # Write data
+        #     for i in range(0, lab_for_2d.shape[1]):
+        #         writer.writerow(lab_for_2d[:,i])
+
+
     def save_csv(self, data, c_names, filename):
         filename = "%s/%s/%s.csv" % (self.results_dir, self.results_name, filename)
         with open(filename, 'w') as csv_file:
@@ -133,6 +157,17 @@ class Results:
 
         figname = "%s/%s/%s" % (self.results_dir, self.results_name, filename)
         plot_comparison_forecast( lab_for_2d, names, figname )
+
+
+    def plot_power_forecast(self, power_2d, names, filename):
+        """
+        Plot V and U predictions against real values in two subplots. Save plot.
+
+        :return: void.
+        """
+
+        figname = "%s/%s/%s" % (self.results_dir, self.results_name, filename)
+        plot_power_forecast( power_2d, names, figname )
 
 
     def plot_rf_optimization(self, data, figname):
