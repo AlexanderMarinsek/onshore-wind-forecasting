@@ -13,71 +13,92 @@ import numpy as np
 
 
 # TODO: DONE take all 3x3 points into account
-# TODO: use more features (also feature selection for optimal features)
+# TODO: DONE use more features (also feature selection for optimal features)
 # TODO: DONE use sin and cos to represent temporal features
 # TODO: DONE add baseline model for comparison (average? current value?)
-# TODO: add better evaluation methods (for accuracy etc.)
+# TODO: DONE add better evaluation methods (for accuracy etc.)
 
 # TODO: DONE comment RF-connected code
 # TODO: DONE save figs and logs in separate directories
 # TODO: DONE automate evaluation
-# TODO: change "secondary_score" to something with more theoretical background
-# TODO: Expose RF parameters
+# TODO: DONE change "secondary_score" to something with more theoretical background
+# TODO: DONE Expose RF parameters
 # TODO: Add RNN (or similar for evaluation)
-# TODO: Add more direct comparison between BL, RF, RNN... (not only plots) - compare scores, or forecasts?
+# TODO: DONE Add more direct comparison between BL, RF, RNN... (not only plots) - compare scores, or forecasts?
 
+# TODO: Empirically find and set the best params in each model's set_params()
 
+"""
+Model (converter) variables
+
+M: Number of preceeding hours used in forecast     (CPU heavy)
+N: Number of forecasted hours                      (CPU light)
+G: Feature data points Grid type:                  (CPU heavy)
+    0: single point (same as for labels)
+    1: +
+    2: x
+    3: full (3x3)
+"""
 
 
 def main():
 
-    # set location (as string)
-    location = 'Area-44.5-28.5-44.7-28.7'
-
-    # set relative path to source data file
-    data_path = '../ERA5-Land'
-
     # Romania time is UTC +3/+2 (summer/winter)
     tz = timezone("Europe/Bucharest")
 
-    # Local time training data start/stop (forecast begins one hour after stop)
-    # start_dt = [
-    #     datetime(2017, 1, 15, 0), datetime(2017, 2, 15, 0),
-    #     datetime(2017, 3, 15, 0), datetime(2017, 4, 15, 0),
-    #     datetime(2017, 5, 15, 0), datetime(2017, 6, 15, 0),
-    #     datetime(2017, 7, 15, 0), datetime(2017, 8, 15, 0),
-    #     datetime(2017, 9, 15, 0), datetime(2017, 10, 15, 0),
-    #     datetime(2017, 11, 15, 0), datetime(2017, 12, 15, 0)]
-    # stop_dt = [
+    # Local time training data start/stop (forecast begins on stop hour)
+    # Validation training data start/stop times
+    # valid_start_dt = [
+    #     datetime(2015, 1, 15, 0), datetime(2015, 2, 15, 0),
+    #     datetime(2015, 3, 15, 0), datetime(2015, 4, 15, 0),
+    #     datetime(2015, 5, 15, 0), datetime(2015, 6, 15, 0),
+    #     datetime(2015, 7, 15, 0), datetime(2015, 8, 15, 0),
+    #     datetime(2015, 9, 15, 0), datetime(2015, 10, 15, 0),
+    #     datetime(2015, 11, 15, 0), datetime(2015, 12, 15, 0)]
+    # valid_start_dt = [
     #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
     #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
     #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
     #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
     #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
     #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
-    start_dt = [datetime(2018, 1, 1, 0), datetime(2018, 2, 1, 0)]
-    stop_dt = [datetime(2018, 1, 5, 0), datetime(2018, 2, 5, 0)]
+    
+    # Test training data start/stop times
+    # test_start_dt = [
+    #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
+    #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
+    #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
+    #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0),
+    #     datetime(2016, 9, 15, 0), datetime(2016, 10, 15, 0),
+    #     datetime(2016, 11, 15, 0), datetime(2016, 12, 15, 0)]
+    # test_start_dt = [
+    #     datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
+    #     datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
+    #     datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
+    #     datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0),
+    #     datetime(2019, 9, 15, 0), datetime(2019, 10, 15, 0),
+    #     datetime(2019, 11, 15, 0), datetime(2019, 12, 15, 0)]
+
+    valid_start_dt = [datetime(2017, 2, 1, 0), datetime(2017, 3, 1, 0)]
+    valid_stop_dt = [datetime(2017, 2, 5, 0), datetime(2017, 3, 5, 0)]
+    
+    test_start_dt = [datetime(2018, 2, 1, 0), datetime(2018, 3, 1, 0)]
+    test_stop_dt = [datetime(2018, 2, 5, 0), datetime(2018, 3, 5, 0)]
 
     # Convert to localized, aware datetime object (2018-...00:00+02:00)
-    start_loc_dt = [tz.localize(s) for s in start_dt]
-    stop_loc_dt = [tz.localize(s) for s in stop_dt]
+    valid_start_loc_dt = [tz.localize(s) for s in valid_start_dt]
+    valid_stop_loc_dt = [tz.localize(s) for s in valid_stop_dt]
+    test_start_loc_dt = [tz.localize(s) for s in test_start_dt]
+    test_stop_loc_dt = [tz.localize(s) for s in test_stop_dt]
 
-    # Initiate new results directory and global object
-    date_str = datetime.utcnow().strftime("%F")
-    results = Results("./Results", "%sx01" % date_str)
+    # Preceeding hours; Forecast hours; Grid type
+    M = [1, 2]; N = [24]; G = [0, 3]
 
-    # M: Number of preceeding hours used in forecast     (CPU heavy)
-    # N: Number of forecasted hours                      (CPU light)
-    # G: Feature data points Grid type:                  (CPU heavy)
-    #   0: single point (same as for labels)
-    #   1: +
-    #   2: x
-    #   3: full (3x3)
-    M = [1, 2]
-    # M = [1]
-    N = [24]
-    G = [0, 3]
-    # G = [0]
+    # Measurement height; WT hub height; Surface Roughness
+    h0 = 10; h = 100; z0 = 0.2;
+
+    # Select turbine
+    turbine = Turbine("Vestas V90", 10, calc_power_vestas_v90_3mw)
 
     models = [
         Bl("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "BL"),
@@ -85,191 +106,51 @@ def main():
         Svr("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "SVR")
     ]
 
+    # Initiate new results directory and global object
+    date_str = datetime.utcnow().strftime("%F")
+    results = Results("./Results", "%sx01" % date_str)
 
-
-    initial_time = datetime.now()
-    text = "Begin: %s" % initial_time.strftime("%FT%02H:%02M:%02S")
+    # Output and log
+    text = "Begin (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
     print(text)
     results.append_log(text)
 
+    # Output and log
     text = "Results directory: %s" % results.results_name
     print (text)
     results.append_log(text)
 
-    # results.results_name = "2020-01-05x05"
+    # Output and log
+    text = "Validation- and test- star/stop dates: \n*%s\n*%s\n*%s\n*%s" % (
+        str(valid_start_loc_dt),
+        str(valid_stop_loc_dt),
+        str(test_stop_loc_dt),
+        str(test_stop_loc_dt))
+    print(text)
+    results.append_log(text)
 
-    # models[1].set_vars(3, 24, 2)
-    # tune_model_vars( models[1], start_loc_dt, stop_loc_dt, M, N, G, results )
 
-    compare_models( models, start_loc_dt, stop_loc_dt, results )
+    # Tune model variables based on validation training data
+    # tune_model_vars(
+    #     models[1], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
+    # tune_model_vars(
+    #     models[2], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
 
+    # Compare model forecasts based on test training data
+    compare_models(
+        models, test_start_loc_dt, test_stop_loc_dt, results )
+
+    # Extrapolate forecasted wind speeds and calulate power
+    extrapolate_and_calc_power (
+        models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
+
+    # Evaluate the influence of the N variable for each model
     # N = [n for n in range(1,25)]
-    # test_model_n_variable( models[1], start_loc_dt, stop_loc_dt, N, results )
+    # eval_model_n_variable(
+    #     models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
+    # eval_model_n_variable(
+    #     models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
 
-    extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, results )
-
-
-def extrapolate( v0, h0, h, z0 ):
-    v = v0 * ( np.log(h/z0) / np.log(h0/z0) )
-    return v
-
-def read_forecast( filename ):
-    import csv
-    filename = "%s.csv" % filename
-    forecast = []
-    labels = []
-    with open(filename) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        i = 0
-        for row in csv_reader:
-            if i > 0:
-                labels.append(float(row[0]))
-                forecast.append(float(row[1]))
-            i += 1
-
-    return [ np.array(labels), np.array(forecast) ]
-
-
-def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, results ):
-
-    names = [model.name for model in models]
-
-    turbine = Turbine("Vestas V90", 10, calc_power_vestas_v90_3mw)
-
-    [h0, h, z0] = [10, 100, 0.2]
-
-    res_3d = []
-
-    for start, stop in zip(start_loc_dt, stop_loc_dt):
-
-        res_2d = []
-        power_2d = []
-
-        for model in models:
-
-            [m, n, g] = model.get_vars()
-            filename = "%s/%s-forecast_%s_%s_%d_%d_%d" % (
-                results.get_full_path(),
-                model.name,
-                start.strftime("%F"),
-                stop.strftime("%F"),
-                m, n, g)
-            [labels_10, forecast_10] = read_forecast(filename)
-
-            [labels_100, forecast_100] = extrapolate(np.array([labels_10, forecast_10]), h0, h, z0)
-
-            labels_p = turbine.calc_power(labels_100)
-            forecast_p = turbine.calc_power(forecast_100)
-
-            errors_10 = calc_errors(labels_10, forecast_10)
-            errors_100 = calc_errors(labels_100, forecast_100)
-            errors_p = calc_errors(labels_p, forecast_p)
-
-            res_tmp = np.array([errors_10, errors_100, errors_p])
-
-            if len(res_2d) > 0:
-                power_2d = np.concatenate((power_2d, np.array([labels_p, forecast_p])), axis=0)
-                res_2d = np.concatenate((res_2d, res_tmp), axis=0)
-            else:
-                power_2d = np.array([labels_p, forecast_p])
-                res_2d = res_tmp
-
-        filename = "Power-forecast_%s_%s" % (
-            start.strftime("%F"),
-            stop.strftime("%F"))
-        results.plot_power_forecast(power_2d, names, filename)
-
-        if len(res_3d) > 0:
-            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
-        else:
-            res_3d = np.array([res_2d])
-
-    # Save full (3D) collection of errors and times
-    filename = "Power-errors_%s_%s" % (
-        start.strftime("%F"),
-        stop.strftime("%F"))
-    results.save_npz(res_3d, filename)
-
-    # Calculate average errors and times
-    res_avg = np.zeros(res_3d[0, :, :].shape)
-    length = res_3d.shape[0]  # number of dates
-
-    for i in range(0, length):
-        res_avg += (1.0 * res_3d[i, :, :] / length)
-
-    # Save average errors and times
-    names_ext = np.array([np.repeat(names, 3)]).T
-    titles_ext = np.array([["v10", "v100", "p100"] * len(names)]).T
-    data = np.concatenate( ( names_ext, titles_ext, res_avg ), axis=1 )
-    c_names = ["Model", "Title","MAE", "MAPE", "MSE", "RMSE"]
-    filename = "Power-results-avg"
-    results.save_csv(data, c_names, filename)
-
-    a = 1
-
-def compare_models( models, start_loc_dt, stop_loc_dt, results ):
-
-    names = [model.name for model in models]
-
-    res_3d = []
-
-    for start, stop in zip(start_loc_dt, stop_loc_dt):
-
-        res_2d = []
-        lab_for_2d = []
-
-        for model in models:
-
-            [t, labels, forecast] = model.run( start, stop )
-            errors = calc_errors(labels, forecast)
-            res_tmp = np.array([np.concatenate((errors, t), axis=0)])
-
-            [m, n, g] = model.get_vars()
-            filename = "%s-forecast_%s_%s_%d_%d_%d" % (
-                model.name,
-                start.strftime("%F"),
-                stop.strftime("%F"),
-                m, n, g)
-            results.save_forecast(labels, forecast, filename)
-            results.plot_forecast(labels, forecast, filename)
-
-            if len(lab_for_2d) > 0:
-                lab_for_2d = np.concatenate((lab_for_2d, np.array([labels, forecast])), axis=0)
-                res_2d = np.concatenate((res_2d, res_tmp), axis=0)
-            else:
-                lab_for_2d = np.array([labels, forecast])
-                res_2d = res_tmp
-
-        filename = "Comparison-forecast_%s_%s" % (
-            start.strftime("%F"),
-            stop.strftime("%F"))
-        results.save_comparison_forecast(lab_for_2d, names, filename)
-        results.plot_comparison_forecast(lab_for_2d, names, filename)
-
-        if len(res_3d) > 0:
-            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
-        else:
-            res_3d = np.array([res_2d])
-
-    # Save full (3D) collection of errors and times
-    filename = "Comparison-errors_%s_%s" % (
-        start.strftime("%F"),
-        stop.strftime("%F"))
-    results.save_npz(res_3d, filename)
-
-    # Calculate average errors and times
-    res_avg = np.zeros(res_3d[0, :, :].shape)
-    length = res_3d.shape[0]  # number of dates
-
-    for i in range(0, length):
-        res_avg += (1.0 * res_3d[i, :, :] / length)
-
-    # Save average errors and times
-    data = np.concatenate( ( np.array([names]).T, res_avg ), axis=1 )
-    c_names = ["Model", "MAE", "MAPE", "MSE", "RMSE",
-               "t_tot [s]", "t_fit [s]", "t_for [s]"]
-    filename = "Comparison-results-avg"
-    results.save_csv(data, c_names, filename)
 
 
 def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
@@ -284,23 +165,32 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     :param G: Feature data points Grid type.
     :param results: Results object reference.
 
-    :return: List containing elapsed time, actual and forecasted values
-        [t, labels, forecast]
+    :return: void
     """
 
-    model.set_parameters(100, "mse")
+    # Output and log
+    text = "Tune %s M-N-G variables (%s): %s-%s-%s" % (
+        model.name, datetime.now().strftime("%FT%02H:%02M:%02S"),
+        str(M), str(N), str(G) )
+    print(text)
+    results.append_log(text)
 
     res_3d = []
 
     for start, stop in zip(start_loc_dt, stop_loc_dt):
+
         res_2d = []
+
         for m in M:
             for n in N:
                 for g in G:
+
+                    # Get forecast
                     model.set_vars(m, n, g)     # Set M, N, G
                     [t, labels, forecast] = model.run(start, stop)
 
-                    filename = "%s-forecast_%s_%s_%d_%d_%d" % (
+                    # Save and plot forecast for each date and model
+                    filename = "%s-forecast_%s-%s_%d-%d-%d" % (
                         model.name,
                         start.strftime("%F"),
                         stop.strftime("%F"),
@@ -308,42 +198,39 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
                     results.save_forecast(labels, forecast, filename)
                     results.plot_forecast(labels, forecast, filename)
 
-                    errors = calc_errors(labels, forecast)
+                    # Get relevant error array
+                    errors = calc_errors(labels, forecast)  # Calc errors
                     res_tmp = np.array([
-                        np.concatenate(([m, n, g], errors, [t]), axis=0)])
+                        np.concatenate(([m, n, g], errors, t), axis=0)])
 
+                    # Append results for current m-n-g parameters
                     if len(res_2d) > 0:
                         res_2d = np.concatenate((res_2d, res_tmp), axis=0)
                     else:
                         res_2d = res_tmp
 
+        # Append 2D results to 3D array containing the time dimension
         if len(res_3d) > 0:
             res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
         else:
             res_3d = np.array([res_2d])
 
-
     # Save full (3D) collection of errors and times
-    filename = "%s-optimization-errors%s_%s" % (
-        model.name,
-        start.strftime("%F"),
-        stop.strftime("%F"))
+    filename = "%s-optimization-errors" % model.name
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
     res_avg = np.zeros(res_3d[0,:,3:].shape)   # exclude M, N, G variables
     length = res_3d.shape[0]    # number of dates
 
+    # Average results based on date
     for i in range (0, length):
         res_avg += ( 1.0 * res_3d[i,:,3:] / length )
 
     # Save average errors and times
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
     c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
-    filename = "%s-optimization-errors-avg_%s_%s" % (
-        model.name,
-        start.strftime("%F"),
-        stop.strftime("%F"))
+    filename = "%s-optimization-errors-avg" % model.name
     results.save_csv( data, c_names, filename )
 
     # Plot average errors and times
@@ -351,21 +238,113 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
 
     # Find optimal M, N, G combination
     [M_opt, N_opt, G_opt] = data[-1, 0:3]   # Last is optimal by default
-    e_opt = data[-1, -2]
+    e_opt = data[-1, -4]
     for i in range(0, data.shape[0]-1):
-        if data[i, -2] < e_opt:
-            e_opt = data[i, -2]
+        if data[i, -4] < e_opt:
+            e_opt = data[i, -4]
             [M_opt, N_opt, G_opt] = data[i, 0:3]
 
     # Tune model according to optimal variables
     model.set_vars(int(M_opt), int(N_opt), int(G_opt))
 
+    # Output and log
+    text = "Optimal M-N-G variables (%s): %d-%d-%d" % (
+        datetime.now().strftime("%FT%02H:%02M:%02S"), M_opt, N_opt, G_opt)
+    print(text)
+    results.append_log(text)
 
 
-
-def test_model_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
+def compare_models( models, start_loc_dt, stop_loc_dt, results ):
     """
-    Collect error data of model forecast for different N values.
+    Compare models and save error comparison.
+
+    :param models: list of models based on custom classes.
+    :param start_loc_dt: Start time, localized (aware) datetime object.
+    :param stop_loc_dt: Stop time, localized (aware) datetime object.
+    :param results: Results object reference.
+
+    :return: void
+    """
+
+    # Generate array of model names
+    names = [model.name for model in models]
+
+    # Output and log
+    text = "Compare models (%s): %s" % (
+        datetime.now().strftime("%FT%02H:%02M:%02S"), str(names) )
+    print(text)
+    results.append_log(text)
+
+    res_3d = []
+
+    for start, stop in zip(start_loc_dt, stop_loc_dt):
+
+        res_2d = []
+        lab_for_2d = []
+
+        for model in models:
+
+            # Get forecast and relevant error array
+            [t, labels, forecast] = model.run( start, stop )
+
+            # Save and plot forecast for each date and model
+            # [m, n, g] = model.get_vars()
+            # filename = "%s-forecast_%s-%s_%d-d-%d" % (
+            #     model.name,
+            #     start.strftime("%F"),
+            #     stop.strftime("%F"),
+            #     m, n, g)
+            # results.save_forecast(labels, forecast, filename)
+            # results.plot_forecast(labels, forecast, filename)
+
+            # Get relevant error array
+            errors = calc_errors(labels, forecast)
+            res_tmp = np.array([np.concatenate((errors, t), axis=0)])
+
+            # Append model results for current date
+            if len(lab_for_2d) > 0:
+                lab_for_2d = np.concatenate((lab_for_2d, np.array([labels, forecast])), axis=0)
+                res_2d = np.concatenate((res_2d, res_tmp), axis=0)
+            else:
+                lab_for_2d = np.array([labels, forecast])
+                res_2d = res_tmp
+
+        # Save and plot all model forecasts together for current date
+        filename = "Comparison-forecast_%s-%s" % (
+            start.strftime("%F"),
+            stop.strftime("%F"))
+        results.save_comparison_forecast(lab_for_2d, names, filename)
+        results.plot_comparison_forecast(lab_for_2d, names, filename)
+
+        # Append 2D results to D array containing the time dimension
+        if len(res_3d) > 0:
+            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
+        else:
+            res_3d = np.array([res_2d])
+
+    # Save full (3D) collection of errors and times
+    filename = "Comparison-errors"
+    results.save_npz(res_3d, filename)
+
+    # Calculate average errors and times
+    res_avg = np.zeros(res_3d[0, :, :].shape)
+    length = res_3d.shape[0]  # number of dates
+
+    # Average results based on date
+    for i in range(0, length):
+        res_avg += (1.0 * res_3d[i, :, :] / length)
+
+    # Save average errors and times
+    data = np.concatenate( ( np.array([names]).T, res_avg ), axis=1 )
+    c_names = ["Model", "MAE", "MAPE", "MSE", "RMSE",
+               "t_tot [s]", "t_fit [s]", "t_for [s]"]
+    filename = "Comparison-errors-avg"
+    results.save_csv(data, c_names, filename)
+
+
+def eval_model_n_variable( model, start_loc_dt, stop_loc_dt, N, results ):
+    """
+    Evalueta forecast error for different N values.
 
     :param model: model based on custom class.
     :param start_loc_dt: Start time, localized (aware) datetime object.
@@ -373,23 +352,24 @@ def test_model_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
     :param N: Number of forecasted hours.
     :param results: Results object reference.
 
-    :return: List containing elapsed time, actual and forecasted values
-        [t, labels, forecast]
+    :return: void
     """
-
-    model.set_parameters(100, "mse")
 
     res_3d = []
 
-    [m, n, g] = model.get_vars()
-
     for start, stop in zip(start_loc_dt, stop_loc_dt):
+
         res_2d = []
+
         for n in N:
+
+            # Get forecast
             model.set_vars(m, n, g)  # Set M, N, G
             [t, labels, forecast] = model.run(start, stop)
 
-            filename = "%s-forecast_%s_%s_%d_%d_%d" % (
+            # Save and plot forecast for each date and N
+            [m, n, g] = model.get_vars()
+            filename = "%s-forecast_%s-%s_%d-%d-%d" % (
                 model.name,
                 start.strftime("%F"),
                 stop.strftime("%F"),
@@ -397,45 +377,175 @@ def test_model_n_variable(model, start_loc_dt, stop_loc_dt, N, results):
             results.save_forecast(labels, forecast, filename)
             results.plot_forecast(labels, forecast, filename)
 
+            # Get relevant error array
             errors = calc_errors(labels, forecast)
             res_tmp = np.array([
-                np.concatenate(([m, n, g], errors, [t]), axis=0)])
+                np.concatenate(([m, n, g], errors, t), axis=0)])
 
+            # Append results for current m-n-g parameters
             if len(res_2d) > 0:
                 res_2d = np.concatenate((res_2d, res_tmp), axis=0)
             else:
                 res_2d = res_tmp
 
+        # Append 2D results to 3D array containing the time dimension
         if len(res_3d) > 0:
             res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
         else:
             res_3d = np.array([res_2d])
 
     # Save full (3D) collection of errors and times
-    filename = "%s-N-test-errors_%s_%s" % (
-        model.name,
-        start.strftime("%F"),
-        stop.strftime("%F"))
+    filename = "%s-N-test-errors" % model.name
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
     res_avg = np.zeros(res_3d[0,:,3:].shape)   # exclude M, N, G variables
     length = res_3d.shape[0]    # number of dates
 
+    # Average results
     for i in range (0, length):
         res_avg += ( 1.0 * res_3d[i,:,3:] / length )
 
     # Save average errors and times
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
     c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
-    filename = "%s-N-test-errors-avg_%s_%s" % (
-        model.name,
-        start.strftime("%F"),
-        stop.strftime("%F"))
+    filename = "%s-N-test-errors-avg" % model.name
     results.save_csv( data, c_names, filename )
 
     # Plot average errors and times
     results.plot_n_test( data, filename )
+
+
+def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, turbine, results ):
+    """
+    Extrapolate values and calculate power.
+
+    :param models: list of models based on custom classes.
+    :param start_loc_dt: Start time, localized (aware) datetime object.
+    :param stop_loc_dt: Stop time, localized (aware) datetime object.
+    :param h0: Height (meters) at which measurements were made.
+    :param h: Height (meters) of the turbine's hub.
+    :param z0: Surface roughnes (meters).
+    :param turbine: Turbine model (custom class).
+    :param results: Results object reference.
+
+    :return: void
+    """
+
+    # Generate array of model names
+    names = [model.name for model in models]
+
+    res_3d = []
+
+    for start, stop in zip(start_loc_dt, stop_loc_dt):
+
+        res_2d = []
+        power_2d = []
+
+        for model in models:
+
+            # Open saved forecast  for specific model, date and variables
+            [m, n, g] = model.get_vars()
+            filename = "%s/%s-forecast_%s-%s_%d-%d-%d" % (
+                results.get_full_path(),
+                model.name,
+                start.strftime("%F"),
+                stop.strftime("%F"),
+                m, n, g)
+            [labels_10, forecast_10] = read_forecast(filename)
+
+            # Extrapolate values to hub height
+            [labels_ext, forecast_ext] = extrapolate(np.array([labels_10, forecast_10]), h0, h, z0)
+
+            # Calculate output power
+            labels_p = turbine.calc_power(labels_ext)
+            forecast_p = turbine.calc_power(forecast_ext)
+
+            # Get relevant error arrays
+            errors_10 = calc_errors(labels_10, forecast_10)
+            errors_ext = calc_errors(labels_ext, forecast_ext)
+            errors_p = calc_errors(labels_p, forecast_p)
+
+            res_tmp = np.array([errors_10, errors_ext, errors_p])
+
+            # Append 2D results to 3D array containing the time dimension
+            if len(res_2d) > 0:
+                power_2d = np.concatenate((power_2d, np.array([labels_p, forecast_p])), axis=0)
+                res_2d = np.concatenate((res_2d, res_tmp), axis=0)
+            else:
+                power_2d = np.array([labels_p, forecast_p])
+                res_2d = res_tmp
+
+        # Plot power outputs (don't save - forecast CSV already exists)
+        filename = "Power-forecast_%s-%s" % (
+            start.strftime("%F"),
+            stop.strftime("%F"))
+        results.plot_power_forecast(power_2d, names, filename)
+
+        # Append 2D results to 3D array containing the time dimension
+        if len(res_3d) > 0:
+            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
+        else:
+            res_3d = np.array([res_2d])
+
+    # Save full (3D) collection of errors and times
+    filename = "Power-errors"
+    results.save_npz(res_3d, filename)
+
+    # Calculate average errors and times
+    res_avg = np.zeros(res_3d[0, :, :].shape)
+    length = res_3d.shape[0]  # number of dates
+
+    # Average results
+    for i in range(0, length):
+        res_avg += (1.0 * res_3d[i, :, :] / length)
+
+    # Save average errors and times
+    names_ext = np.array([np.repeat(names, 3)]).T
+    titles_ext = np.array([["v10", "v100", "p100"] * len(names)]).T
+    data = np.concatenate( ( names_ext, titles_ext, res_avg ), axis=1 )
+    c_names = ["Model", "Title","MAE", "MAPE", "MSE", "RMSE"]
+    filename = "Power-errors-avg"
+    results.save_csv(data, c_names, filename)
+
+
+def extrapolate( v0, h0, h, z0 ):
+    """
+    Extrapolate values (works with Numpy arrays).
+
+    :param h0: Height (meters) at which measurements were made.
+    :param h: Height (meters) of the turbine's hub.
+    :param z0: Surface roughnes (meters).
+
+    :return: Extrapolated value, or array of values
+    """
+    v = v0 * ( np.log(h/z0) / np.log(h0/z0) )
+    return v
+
+
+def read_forecast( filepath ):
+    """
+    Read forecast CSV.
+
+    :param filepath: String containing the path to the forecast.
+
+    :return: Numpy array of labels and forecasts
+    """
+
+    import csv
+    filepath = "%s.csv" % filepath
+    forecast = []
+    labels = []
+    with open(filepath) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        i = 0
+        for row in csv_reader:
+            if i > 0:
+                labels.append(float(row[0]))
+                forecast.append(float(row[1]))
+            i += 1
+
+    return [ np.array(labels), np.array(forecast) ]
 
 
 if __name__ == "__main__":
