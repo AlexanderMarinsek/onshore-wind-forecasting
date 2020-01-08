@@ -14,11 +14,15 @@ class Svr:
         self.set_vars()
 
 
-    def set_parameters(self, kernel="rbf", c=0.1, epsilon=1, gamma="auto"):
+    def set_parameters(self, kernel="rbf", c=0.1, epsilon=1, gamma="scale"):
         self.kernel = kernel
         self.c = c
         self.epsilon = epsilon
         self.gamma = gamma
+
+
+    def get_parameters(self):
+        return [self.kernel, self.c, self.epsilon, self.gamma]
 
 
     def set_vars(self, M=1, N=24, G=0):

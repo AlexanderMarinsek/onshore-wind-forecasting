@@ -1,16 +1,14 @@
-from results import Results
 from bl_model import Bl
 from rf_model import Rf
 from svr_model import Svr
+from results import Results
 from evaluate import calc_errors
-
 from turbines import *
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from pytz import timezone
 import numpy as np
-
-
+from csv import reader
 
 # TODO: DONE take all 3x3 points into account
 # TODO: DONE use more features (also feature selection for optimal features)
@@ -49,41 +47,37 @@ def main():
     # Local time training data start/stop (forecast begins on stop hour)
     # Validation training data start/stop times
     # valid_start_dt = [
-    #     datetime(2015, 1, 15, 0), datetime(2015, 2, 15, 0),
-    #     datetime(2015, 3, 15, 0), datetime(2015, 4, 15, 0),
-    #     datetime(2015, 5, 15, 0), datetime(2015, 6, 15, 0),
-    #     datetime(2015, 7, 15, 0), datetime(2015, 8, 15, 0),
-    #     datetime(2015, 9, 15, 0), datetime(2015, 10, 15, 0),
-    #     datetime(2015, 11, 15, 0), datetime(2015, 12, 15, 0)]
-    # valid_start_dt = [
-    #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
-    #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
-    #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
-    #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
-    #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
-    #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
-    
-    # Test training data start/stop times
-    # test_start_dt = [
     #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
     #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
     #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
     #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0),
     #     datetime(2016, 9, 15, 0), datetime(2016, 10, 15, 0),
     #     datetime(2016, 11, 15, 0), datetime(2016, 12, 15, 0)]
+    # valid_stop_dt = [
+    #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+    #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+    #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+    #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
+    #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
+    #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+
+    # Test training data start/stop times
     # test_start_dt = [
+    #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
+    #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
+    #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
+    #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
+    # test_stop_dt = [
     #     datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
     #     datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
     #     datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
-    #     datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0),
-    #     datetime(2019, 9, 15, 0), datetime(2019, 10, 15, 0),
-    #     datetime(2019, 11, 15, 0), datetime(2019, 12, 15, 0)]
+    #     datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
 
     valid_start_dt = [datetime(2017, 2, 1, 0), datetime(2017, 3, 1, 0)]
-    valid_stop_dt = [datetime(2017, 2, 5, 0), datetime(2017, 3, 5, 0)]
-    
+    valid_stop_dt = [datetime(2017, 2, 3, 0), datetime(2017, 3, 3, 0)]
+
     test_start_dt = [datetime(2018, 2, 1, 0), datetime(2018, 3, 1, 0)]
-    test_stop_dt = [datetime(2018, 2, 5, 0), datetime(2018, 3, 5, 0)]
+    test_stop_dt = [datetime(2018, 2, 3, 0), datetime(2018, 3, 3, 0)]
 
     # Convert to localized, aware datetime object (2018-...00:00+02:00)
     valid_start_loc_dt = [tz.localize(s) for s in valid_start_dt]
@@ -92,23 +86,40 @@ def main():
     test_stop_loc_dt = [tz.localize(s) for s in test_stop_dt]
 
     # Preceeding hours; Forecast hours; Grid type
-    M = [1, 2]; N = [24]; G = [0, 3]
+    M = [1, 2, 4]; N = [24]; G = [0, 3];
 
-    # Measurement height; WT hub height; Surface Roughness
+    # Measurement height; WT hub height; Surface Roughness (0.1~0.3 for RO)
     h0 = 10; h = 100; z0 = 0.2;
 
-    # Select turbine
-    turbine = Turbine("Vestas V90", 10, calc_power_vestas_v90_3mw)
+    # Define turbine
+    # vestas_v90 = np.array([
+    #     [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 25],
+    #     [0, 75, 190, 353, 581, 886, 1273, 1710, 2145, 2544, 2837, 2965, 2995, 3000, 3000]])
+    # turbine = Turbine("Vestas V90", 10, vestas_v90)
+    ge_2_5_xl = np.array([
+        [3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10,
+            10.5, 11, 11.5, 12, 12.5, 13, 13.5, 25],
+        [0, 30, 63, 129, 194, 295, 395, 527, 658, 809, 959, 1152,
+            1345, 1604, 1862, 2060, 2248, 2340, 2426, 2475, 2495, 2500, 2500]])
+    turbine = Turbine("GE 2.5xl", 10, ge_2_5_xl)
+
+    data_dir = "../ERA5-Land/Area-44.5-28.5-44.7-28.7-10mVw-10mUw-2mt-Sp-Ssrd-2md"
 
     models = [
-        Bl("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "BL"),
-        Rf("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "RF"),
-        Svr("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "SVR")
+        Bl(data_dir, "BL"),
+        Rf(data_dir, "RF"),
+        Svr(data_dir, "SVR")
     ]
+
+    models[0].set_parameters()
+    models[1].set_parameters()
+    models[2].set_parameters()
 
     # Initiate new results directory and global object
     date_str = datetime.utcnow().strftime("%F")
     results = Results("./Results", "%sx01" % date_str)
+
+    # results.results_name = "2020-01-08x04"
 
     # Output and log
     text = "Begin (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
@@ -116,15 +127,32 @@ def main():
     results.append_log(text)
 
     # Output and log
-    text = "Results directory: %s" % results.results_name
+    text = "\nResults directory: %s" % results.results_name
     print (text)
     results.append_log(text)
 
     # Output and log
-    text = "Validation- and test- star/stop dates: \n*%s\n*%s\n*%s\n*%s" % (
+    text = "\nData directory: %s" % data_dir
+    print (text)
+    results.append_log(text)
+
+    # Output and log
+    text = "\nModels and params: %s" % \
+           ["%s %s" % (model.name, str(model.get_parameters())) for model in models]
+    print (text)
+    results.append_log(text)
+
+    # Output and log
+    text = "\nTurbine: (h0-h-z0 %.2f-%.2f-%.2f) %s %s" % \
+           (h0, h, z0, turbine.name, str(turbine.p_curve))
+    print (text)
+    results.append_log(text)
+
+    # Output and log
+    text = "\nValidation- and test- star/stop dates: \n %s\n %s\n %s\n %s" % (
         str(valid_start_loc_dt),
         str(valid_stop_loc_dt),
-        str(test_stop_loc_dt),
+        str(test_start_loc_dt),
         str(test_stop_loc_dt))
     print(text)
     results.append_log(text)
@@ -141,14 +169,14 @@ def main():
         models, test_start_loc_dt, test_stop_loc_dt, results )
 
     # Extrapolate forecasted wind speeds and calulate power
-    extrapolate_and_calc_power (
-        models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
-
-    # Evaluate the influence of the N variable for each model
+    # extrapolate_and_calc_power (
+    #     models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
+    #
+    # # Evaluate the influence of the N variable for each model
     # N = [n for n in range(1,25)]
-    # eval_model_n_variable(
+    # eval_model_n_var(
     #     models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
-    # eval_model_n_variable(
+    # eval_model_n_var(
     #     models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
 
 
@@ -169,7 +197,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     """
 
     # Output and log
-    text = "Tune %s M-N-G variables (%s): %s-%s-%s" % (
+    text = "\nTune %s M-N-G variables (%s): %s-%s-%s" % (
         model.name, datetime.now().strftime("%FT%02H:%02M:%02S"),
         str(M), str(N), str(G) )
     print(text)
@@ -178,6 +206,13 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     res_3d = []
 
     for start, stop in zip(start_loc_dt, stop_loc_dt):
+
+        text = " New dates (%s): %s-%s" % (
+            datetime.now().strftime("%FT%02H:%02M:%02S"),
+            start.strftime("%FT%02H:%02M:%02S"),
+            stop.strftime("%FT%02H:%02M:%02S") )
+        print(text)
+        results.append_log(text)
 
         res_2d = []
 
@@ -190,7 +225,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
                     [t, labels, forecast] = model.run(start, stop)
 
                     # Save and plot forecast for each date and model
-                    filename = "%s-forecast_%s-%s_%d-%d-%d" % (
+                    filename = "%s-forecast-10_%s-%s_%d-%d-%d" % (
                         model.name,
                         start.strftime("%F"),
                         stop.strftime("%F"),
@@ -216,7 +251,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
             res_3d = np.array([res_2d])
 
     # Save full (3D) collection of errors and times
-    filename = "%s-optimization-errors" % model.name
+    filename = "%s-tuning-errors" % model.name
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
@@ -229,12 +264,13 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
 
     # Save average errors and times
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
-    c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
-    filename = "%s-optimization-errors-avg" % model.name
+    c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE",
+        "t_tot [s]", "t_fit [s]", "t_for [s]"]
+    filename = "%s-tuning-errors-avg" % model.name
     results.save_csv( data, c_names, filename )
 
     # Plot average errors and times
-    results.plot_rf_optimization( data, filename )
+    results.plot_var_tuning( model.name, data, filename )
 
     # Find optimal M, N, G combination
     [M_opt, N_opt, G_opt] = data[-1, 0:3]   # Last is optimal by default
@@ -248,8 +284,8 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     model.set_vars(int(M_opt), int(N_opt), int(G_opt))
 
     # Output and log
-    text = "Optimal M-N-G variables (%s): %d-%d-%d" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"), M_opt, N_opt, G_opt)
+    text = "Tuned %s M-N-G variables (%s): %d-%d-%d" % (
+        model.name, datetime.now().strftime("%FT%02H:%02M:%02S"), M_opt, N_opt, G_opt)
     print(text)
     results.append_log(text)
 
@@ -270,7 +306,7 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
     names = [model.name for model in models]
 
     # Output and log
-    text = "Compare models (%s): %s" % (
+    text = "\nCompare models (%s): %s" % (
         datetime.now().strftime("%FT%02H:%02M:%02S"), str(names) )
     print(text)
     results.append_log(text)
@@ -279,23 +315,32 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
 
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
+        text = " New dates (%s): %s-%s" % (
+            datetime.now().strftime("%FT%02H:%02M:%02S"),
+            start.strftime("%FT%02H:%02M:%02S"),
+            stop.strftime("%FT%02H:%02M:%02S") )
+        print(text)
+        results.append_log(text)
+
         res_2d = []
         lab_for_2d = []
 
         for model in models:
 
+            model.set_vars(1,12,0)
+
             # Get forecast and relevant error array
             [t, labels, forecast] = model.run( start, stop )
 
             # Save and plot forecast for each date and model
-            # [m, n, g] = model.get_vars()
-            # filename = "%s-forecast_%s-%s_%d-d-%d" % (
-            #     model.name,
-            #     start.strftime("%F"),
-            #     stop.strftime("%F"),
-            #     m, n, g)
-            # results.save_forecast(labels, forecast, filename)
-            # results.plot_forecast(labels, forecast, filename)
+            [m, n, g] = model.get_vars()
+            filename = "%s-forecast-10_%s-%s_%d-%d-%d" % (
+                model.name,
+                start.strftime("%F"),
+                stop.strftime("%F"),
+                m, n, g)
+            results.save_forecast(labels, forecast, filename)
+            results.plot_forecast(labels, forecast, filename)
 
             # Get relevant error array
             errors = calc_errors(labels, forecast)
@@ -313,8 +358,8 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
         filename = "Comparison-forecast_%s-%s" % (
             start.strftime("%F"),
             stop.strftime("%F"))
-        results.save_comparison_forecast(lab_for_2d, names, filename)
-        results.plot_comparison_forecast(lab_for_2d, names, filename)
+        results.save_comparison_forecast(lab_for_2d, names.copy(), filename)
+        results.plot_comparison_forecast(lab_for_2d, names.copy(), filename)
 
         # Append 2D results to D array containing the time dimension
         if len(res_3d) > 0:
@@ -342,7 +387,7 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
     results.save_csv(data, c_names, filename)
 
 
-def eval_model_n_variable( model, start_loc_dt, stop_loc_dt, N, results ):
+def eval_model_n_var( model, start_loc_dt, stop_loc_dt, N, results ):
     """
     Evalueta forecast error for different N values.
 
@@ -355,9 +400,26 @@ def eval_model_n_variable( model, start_loc_dt, stop_loc_dt, N, results ):
     :return: void
     """
 
+    # Get m & n variables for later usage
+    [m, n, g] = model.get_vars()
+
+    text = "\nEvaluate %s N (%s): %d-%s-%d" % (
+        model.name,
+        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        m, str(N), g)
+    print(text)
+    results.append_log(text)
+
     res_3d = []
 
     for start, stop in zip(start_loc_dt, stop_loc_dt):
+
+        text = " New dates (%s): %s-%s" % (
+            datetime.now().strftime("%FT%02H:%02M:%02S"),
+            start.strftime("%FT%02H:%02M:%02S"),
+            stop.strftime("%FT%02H:%02M:%02S") )
+        print(text)
+        results.append_log(text)
 
         res_2d = []
 
@@ -369,7 +431,7 @@ def eval_model_n_variable( model, start_loc_dt, stop_loc_dt, N, results ):
 
             # Save and plot forecast for each date and N
             [m, n, g] = model.get_vars()
-            filename = "%s-forecast_%s-%s_%d-%d-%d" % (
+            filename = "%s-forecast-10_%s-%s_%d-%d-%d" % (
                 model.name,
                 start.strftime("%F"),
                 stop.strftime("%F"),
@@ -413,7 +475,7 @@ def eval_model_n_variable( model, start_loc_dt, stop_loc_dt, N, results ):
     results.save_csv( data, c_names, filename )
 
     # Plot average errors and times
-    results.plot_n_test( data, filename )
+    results.plot_n_eval( data, filename )
 
 
 def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, turbine, results ):
@@ -435,18 +497,33 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
     # Generate array of model names
     names = [model.name for model in models]
 
+    # Output and log
+    text = "\nCalculate power (%s): %d %d %f %s" % (
+        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        h0, h, z0, turbine.name)
+    print(text)
+    results.append_log(text)
+
     res_3d = []
 
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
+        text = " New dates (%s): %s-%s" % (
+            datetime.now().strftime("%FT%02H:%02M:%02S"),
+            start.strftime("%FT%02H:%02M:%02S"),
+            stop.strftime("%FT%02H:%02M:%02S") )
+        print(text)
+        results.append_log(text)
+
         res_2d = []
         power_2d = []
+        ext_2d = []
 
         for model in models:
 
             # Open saved forecast  for specific model, date and variables
             [m, n, g] = model.get_vars()
-            filename = "%s/%s-forecast_%s-%s_%d-%d-%d" % (
+            filename = "%s/%s-forecast-10_%s-%s_%d-%d-%d" % (
                 results.get_full_path(),
                 model.name,
                 start.strftime("%F"),
@@ -461,6 +538,28 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
             labels_p = turbine.calc_power(labels_ext)
             forecast_p = turbine.calc_power(forecast_ext)
 
+            # Save and plot extrapolated forecast
+            [m, n, g] = model.get_vars()
+            filename = "%s-forecast-%d_%s-%s_%d-%d-%d" % (
+                model.name,
+                h,
+                start.strftime("%F"),
+                stop.strftime("%F"),
+                m, n, g)
+            results.save_forecast(labels_ext, forecast_ext, filename)
+            results.plot_forecast(labels_ext, forecast_ext, filename)
+
+            # Save and plot power forecast
+            [m, n, g] = model.get_vars()
+            filename = "%s-forecast-P%d_%s-%s_%d-%d-%d" % (
+                model.name,
+                h,
+                start.strftime("%F"),
+                stop.strftime("%F"),
+                m, n, g)
+            results.save_forecast(labels_p, forecast_p, filename)
+            results.plot_forecast(labels_p, forecast_p, filename)
+
             # Get relevant error arrays
             errors_10 = calc_errors(labels_10, forecast_10)
             errors_ext = calc_errors(labels_ext, forecast_ext)
@@ -471,16 +570,18 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
             # Append 2D results to 3D array containing the time dimension
             if len(res_2d) > 0:
                 power_2d = np.concatenate((power_2d, np.array([labels_p, forecast_p])), axis=0)
+                ext_2d = np.concatenate((ext_2d, np.array([labels_ext, forecast_ext])), axis=0)
                 res_2d = np.concatenate((res_2d, res_tmp), axis=0)
             else:
                 power_2d = np.array([labels_p, forecast_p])
+                ext_2d = np.array([labels_ext, forecast_ext])
                 res_2d = res_tmp
 
         # Plot power outputs (don't save - forecast CSV already exists)
         filename = "Power-forecast_%s-%s" % (
             start.strftime("%F"),
             stop.strftime("%F"))
-        results.plot_power_forecast(power_2d, names, filename)
+        results.plot_power_forecast(power_2d, ext_2d, turbine.p_curve, names.copy(), filename)
 
         # Append 2D results to 3D array containing the time dimension
         if len(res_3d) > 0:
@@ -532,12 +633,11 @@ def read_forecast( filepath ):
     :return: Numpy array of labels and forecasts
     """
 
-    import csv
     filepath = "%s.csv" % filepath
     forecast = []
     labels = []
     with open(filepath) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
+        csv_reader = reader(csv_file, delimiter=',')
         i = 0
         for row in csv_reader:
             if i > 0:

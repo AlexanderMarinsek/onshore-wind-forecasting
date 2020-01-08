@@ -1,12 +1,13 @@
 ## More at: https://matplotlib.org/3.1.1/tutorials/introductory/customizing.html
 
-axes.titlesize : 16
-axes.titlepad : 10
-axes.labelsize : 14
-axes.labelpad : 10
+axes.titlesize : 20
+axes.titlepad : 20
+axes.labelsize : 18
+axes.labelpad : 12
+axes.linewidth : 1.5
 
-xtick.labelsize : 12
-ytick.labelsize : 12
+xtick.labelsize : 16
+ytick.labelsize : 16
 
 legend.framealpha : 0.65
 legend.loc : upper right
