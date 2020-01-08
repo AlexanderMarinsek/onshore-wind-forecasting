@@ -119,8 +119,6 @@ def main():
     date_str = datetime.utcnow().strftime("%F")
     results = Results("./Results", "%sx01" % date_str)
 
-    # results.results_name = "2020-01-08x04"
-
     # Output and log
     text = "Begin (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
     print(text)
@@ -326,8 +324,6 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
         lab_for_2d = []
 
         for model in models:
-
-            model.set_vars(1,12,0)
 
             # Get forecast and relevant error array
             [t, labels, forecast] = model.run( start, stop )
