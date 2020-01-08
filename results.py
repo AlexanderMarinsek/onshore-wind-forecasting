@@ -148,203 +148,44 @@ class Results:
         plot_forecast(labels, forecast, figname)
 
 
-    def plot_comparison_forecast(self, lab_for_2d, names, filename):
+    def plot_comparison_forecast(self, lab_for_2d, names, figname):
         """
         Plot V and U predictions against real values in two subplots. Save plot.
 
         :return: void.
         """
 
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, filename)
+        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
         plot_comparison_forecast( lab_for_2d, names, figname )
 
 
-    def plot_power_forecast(self, power_2d, names, filename):
+    def plot_power_forecast(self, power_2d, ext_2d, p_curve, names, figname):
         """
         Plot V and U predictions against real values in two subplots. Save plot.
 
         :return: void.
         """
 
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, filename)
-        plot_power_forecast( power_2d, names, figname )
+        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
+        plot_power_forecast( power_2d, ext_2d, p_curve, names, figname )
 
 
-    def plot_rf_optimization(self, data, figname):
+    def plot_var_tuning(self, model_name, data, figname):
         """
         """
 
         figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_rf_optimization(data, figname)
+        plot_var_tuning(model_name, data, figname)
 
 
-    def plot_n_test(self, data, figname):
+    def plot_n_eval(self, data, figname):
         """
         """
 
         figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_n_test(data, figname)
+        plot_n_eval(data, figname)
 
 
-    def plot_RF_M_scores (self, M_arr, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot forecast scores (Brier and secondary). Save plot.
-
-        :param M_arr: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_scores (M_arr, 'M', bs_arr, ss_arr, bs_labels, ss_labels, figname)
-
-
-    def plot_RF_N_scores (self, N_arr, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot forecast scores (Brier and secondary). Save plot.
-
-        :param N_arr: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_scores(N_arr, 'N', bs_arr, ss_arr, bs_labels, ss_labels, figname)
-
-
-    def plot_RF_G_scores (self, G_arr, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot forecast scores (Brier and secondary). Save plot.
-
-        :param G_arr: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_scores (G_arr, 'G', bs_arr, ss_arr, bs_labels, ss_labels, figname)
-
-
-    def plot_BL_scores_all (self, x, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot multiple forecast scores (Brier and secondary). Save plot.
-
-        :param x: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_scores_all (x, 'X', bs_arr, ss_arr, bs_labels, ss_labels, figname)
-
-
-    def plot_RF_M_scores_all (self, M_arr, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot multiple forecast scores (Brier and secondary). Save plot.
-
-        :param M_arr: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_scores_all (M_arr, 'M', bs_arr, ss_arr, bs_labels, ss_labels, figname)
-
-
-    def plot_RF_N_scores_all (self, N_arr, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot multiple forecast scores (Brier and secondary). Save plot.
-
-        :param N_arr: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_scores_all (N_arr, 'N', bs_arr, ss_arr, bs_labels, ss_labels, figname)
-
-
-    def plot_RF_G_scores_all (self, G_arr, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot multiple forecast scores (Brier and secondary). Save plot.
-
-        :param G_arr: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_scores_all (G_arr, 'G', bs_arr, ss_arr, bs_labels, ss_labels, figname)
-
-
-    def plot_RF_optimal_scores_all (self, x, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot multiple forecast scores (Brier and secondary). Save plot.
-
-        :param x: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_scores_all (x, 'X', bs_arr, ss_arr, bs_labels, ss_labels, figname)
-
-
-    def plot_score_comparison (self, x, bs_arr, ss_arr, bs_labels, ss_labels, figname):
-        """
-        Plot multiple forecast scores (Brier and secondary). Save plot.
-
-        :param x: List of X-axis values.
-        :param bs_arr: 2D numpy array of Brier scores.
-        :param ss_arr: 2D numpy array of secondary scores.
-        :param bs_labels: List of Brier score labels.
-        :param ss_labels: List of secondary score values.
-        :param figname: string containing desired figure name without extension.
-
-        :return: void.
-        """
-
-        figname = "%s/%s/%s" % (self.results_dir, self.results_name, figname)
-        plot_score_comparison(x, 'X', bs_arr, ss_arr, bs_labels, ss_labels, figname)
 
 
 

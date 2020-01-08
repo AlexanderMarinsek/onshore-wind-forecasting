@@ -20,6 +20,10 @@ class Rf:
         self.max_features = max_features
 
 
+    def get_parameters(self):
+        return [self.nEstimators, self.criterion, self.max_depth, self.max_features]
+
+
     def set_vars(self, M=1, N=24, G=0):
         self.M = M
         self.N = N

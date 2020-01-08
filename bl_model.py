@@ -12,11 +12,12 @@ class Bl:
         self.set_vars()
 
 
-    def set_parameters(self, nEstimators=100, criterion='mse', max_depth=None, max_features='auto'):
-        self.nEstimators = nEstimators
-        self.criterion = criterion
-        self.max_depth = max_depth
-        self.max_features = max_features
+    def set_parameters(self):
+        self.parameters = "None"
+
+
+    def get_parameters(self):
+        return [self.parameters]
 
 
     def set_vars(self, M=1, N=24, G=0):
@@ -33,7 +34,8 @@ class Bl:
 
         run_time = datetime.now()    # Timer 1
 
-        start_loc_dt = stop_loc_dt - timedelta(hours=48)
+        # Go 24h back and select N values (24h window)
+        start_loc_dt = stop_loc_dt - timedelta(hours=24+self.N)
 
         # label is target data column, features are all other data columns
         features, label_V, label_U =  get_features_and_labels(
@@ -43,12 +45,12 @@ class Bl:
         labels = (label_V**2 + label_U**2)**(1/2)
 
         # Split features and labels with regard to time (dictated by N)
-        train_features = features[0:-24, :]
-        test_features = features[-24:, :]
-        train_labels = labels[0:-24]
-        test_labels = labels[-24:]
+        train_features = features[0:-self.N, :]
+        test_features = features[-self.N:, :]
+        train_labels = labels[0:self.N]
+        test_labels = labels[-self.N:]
 
-        # Create forecast based on test features
+        # Create a N-hour forecast based on N values 24h ago (24h window)
         forecast = train_labels
 
         # Measure elapsed time

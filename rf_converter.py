@@ -108,8 +108,11 @@ def get_features_and_labels(era5_path, start_loc_dt, stop_loc_dt, M, N, G):
     # Copy by value
     tmp_time = start_loc_dt
 
+    _stop_loc_dt = stop_loc_dt + timedelta(hours=N)
+
     # Loop time from start to stop, and extract features
     while (tmp_time < stop_loc_dt):
+    # while (tmp_time < _stop_loc_dt):
 
         # Get broken down UTC
         [year, month, mday, yday, hour] = timestamp_to_UTC(tmp_time)
