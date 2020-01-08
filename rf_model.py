@@ -13,7 +13,7 @@ class Rf:
         self.set_vars()
 
 
-    def set_parameters(self, nEstimators=100, criterion='mse', max_depth=None, max_features='auto'):
+    def set_parameters(self, nEstimators=100, criterion='mse', max_features='auto', max_depth=None):
         self.nEstimators = nEstimators
         self.criterion = criterion
         self.max_depth = max_depth

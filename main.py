@@ -24,7 +24,9 @@ from csv import reader
 # TODO: Add RNN (or similar for evaluation)
 # TODO: DONE Add more direct comparison between BL, RF, RNN... (not only plots) - compare scores, or forecasts?
 
-# TODO: Empirically find and set the best params in each model's set_params()
+# TODO: DONE Empirically find and set the best params
+
+# TODO: Unify forecast names - model, height, dates, params and vars in name
 
 """
 Model (converter) variables
@@ -46,38 +48,38 @@ def main():
 
     # Local time training data start/stop (forecast begins on stop hour)
     # Validation training data start/stop times
-    # valid_start_dt = [
-    #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
-    #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
-    #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
-    #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0),
-    #     datetime(2016, 9, 15, 0), datetime(2016, 10, 15, 0),
-    #     datetime(2016, 11, 15, 0), datetime(2016, 12, 15, 0)]
-    # valid_stop_dt = [
-    #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
-    #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
-    #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
-    #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
-    #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
-    #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+    valid_start_dt = [
+        datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
+        datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
+        datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
+        datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0),
+        datetime(2016, 9, 15, 0), datetime(2016, 10, 15, 0),
+        datetime(2016, 11, 15, 0), datetime(2016, 12, 15, 0)]
+    valid_stop_dt = [
+        datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+        datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+        datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+        datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
+        datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
+        datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
 
     # Test training data start/stop times
-    # test_start_dt = [
-    #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
-    #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
-    #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
-    #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
-    # test_stop_dt = [
-    #     datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
-    #     datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
-    #     datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
-    #     datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
+    test_start_dt = [
+        datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
+        datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
+        datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
+        datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
+    test_stop_dt = [
+        datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
+        datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
+        datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
+        datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
 
-    valid_start_dt = [datetime(2017, 2, 1, 0), datetime(2017, 3, 1, 0)]
-    valid_stop_dt = [datetime(2017, 2, 3, 0), datetime(2017, 3, 3, 0)]
-
-    test_start_dt = [datetime(2018, 2, 1, 0), datetime(2018, 3, 1, 0)]
-    test_stop_dt = [datetime(2018, 2, 3, 0), datetime(2018, 3, 3, 0)]
+    # valid_start_dt = [datetime(2017, 2, 1, 0), datetime(2017, 3, 1, 0)]
+    # valid_stop_dt = [datetime(2017, 2, 3, 0), datetime(2017, 3, 3, 0)]
+    #
+    # test_start_dt = [datetime(2018, 2, 1, 0), datetime(2018, 3, 1, 0)]
+    # test_stop_dt = [datetime(2018, 2, 3, 0), datetime(2018, 3, 3, 0)]
 
     # Convert to localized, aware datetime object (2018-...00:00+02:00)
     valid_start_loc_dt = [tz.localize(s) for s in valid_start_dt]
@@ -105,20 +107,19 @@ def main():
 
     data_dir = "../ERA5-Land/Area-44.5-28.5-44.7-28.7-10mVw-10mUw-2mt-Sp-Ssrd-2md"
 
-    # n_estimators_list = [100, 200, 500, 1000]
-    # max_depth_list = [20, 40, 80, None]
-    # max_features_list = ['auto']
+    n_estimators_list = [10, 100, 1000]
+    criterion_list = ["mse", "mae"]
+    max_features_list = [2, 4, 8, 'auto']
 
-    # c_list = [0.1, 1, 10, 100]
-    # epsilon_list = [0.1, 0.2, 0.4, 0.8]
-    # gamma_list = ['scale']
+    c_list = [0.01, 1, 100]
+    epsilon_list = [0.1, 0.2, 0.4, 0.8]
+    kernel_list = ["poly", "rbf", "sigmoid"]
 
-    # n_estimators_optimal = 100
-    # max_depth_optimal = None
+    n_estimators_optimal = 100
+    criterion_optimal = None
 
-    # c_optimal = 10
-    # epsilon_optimal = 0.8
-
+    c_optimal = 10
+    epsilon_optimal = 0.8
 
     models = [
         Bl(data_dir, "BL"),
@@ -128,7 +129,7 @@ def main():
 
     models[0].set_parameters()
     models[1].set_parameters()
-    models[2].set_parameters()
+    models[2].set_parameters(gamma="auto")
 
     # Initiate new results directory and global object
     date_str = datetime.utcnow().strftime("%F")
@@ -171,27 +172,62 @@ def main():
     results.append_log(text)
 
 
-    # Tune model variables based on validation training data
+    # models[0].set_vars(1,24,0)
+    # models[1].set_vars(1,24,0)
+    # models[2].set_vars(1,24,0)
+    # models[0].set_parameters()
+    # models[1].set_parameters()
+    # models[2].set_parameters(gamma="auto")
+    #
     # tune_model_vars(
     #     models[1], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
     # tune_model_vars(
     #     models[2], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
+    #
+    # models[0].set_vars(1,24,0)
+    # models[1].set_vars(1,24,0)
+    # models[2].set_vars(1,24,0)
+    # models[0].set_parameters()
+    # models[1].set_parameters()
+    # models[2].set_parameters()
+    #
+    # tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
+    #     n_estimators_list, criterion_list, max_features_list, results)
+    # tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
+    #     kernel_list, c_list, epsilon_list, results)
+
+
+    # Tune model parameters based on validation training data
+    tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
+        n_estimators_list, criterion_list, max_features_list, results)
+    tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
+        kernel_list, c_list, epsilon_list, results)
+
+    # Tune model variables based on validation training data
+    tune_model_vars(
+        models[1], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
+    tune_model_vars(
+        models[2], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
 
     # Compare model forecasts based on test training data
     compare_models(
         models, test_start_loc_dt, test_stop_loc_dt, results )
 
     # Extrapolate forecasted wind speeds and calulate power
-    # extrapolate_and_calc_power (
-    #     models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
-    #
-    # # Evaluate the influence of the N variable for each model
-    # N = [n for n in range(1,25)]
-    # eval_model_n_var(
-    #     models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
-    # eval_model_n_var(
-    #     models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
+    extrapolate_and_calc_power (
+        models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
 
+    # # Evaluate the influence of the N variable for each model
+    N = [n for n in range(1,25)]
+    eval_model_n_var(
+        models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
+    eval_model_n_var(
+        models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
+
+    # Output and log
+    text = "Finished (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
+    print(text)
+    results.append_log(text)
 
 
 def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
@@ -238,7 +274,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
                     [t, labels, forecast] = model.run(start, stop)
 
                     # Save and plot forecast for each date and model
-                    filename = "%s-forecast-10_%s-%s_%d-%d-%d" % (
+                    filename = "%s-forecast-var-tuning-10_%s-%s_%d-%d-%d" % (
                         model.name,
                         start.strftime("%F"),
                         stop.strftime("%F"),
@@ -264,7 +300,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
             res_3d = np.array([res_2d])
 
     # Save full (3D) collection of errors and times
-    filename = "%s-tuning-errors" % model.name
+    filename = "%s-var-tuning-errors" % model.name
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
@@ -279,7 +315,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
     c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE",
         "t_tot [s]", "t_fit [s]", "t_for [s]"]
-    filename = "%s-tuning-errors-avg" % model.name
+    filename = "%s-var-tuning-errors-avg" % model.name
     results.save_csv( data, c_names, filename )
 
     # Plot average errors and times
@@ -481,7 +517,8 @@ def eval_model_n_var( model, start_loc_dt, stop_loc_dt, N, results ):
 
     # Save average errors and times
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add M, N, G
-    c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
+    c_names = ["M", "N", "G", "MAE", "MAPE", "MSE", "RMSE",
+        "t_tot [s]", "t_fit [s]", "t_for [s]"]
     filename = "%s-N-test-errors-avg" % model.name
     results.save_csv( data, c_names, filename )
 
@@ -509,7 +546,7 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
     names = [model.name for model in models]
 
     # Output and log
-    text = "\nCalculate power (%s): %d %d %f %s" % (
+    text = "\nCalculate power (%s): %d %d %.2f %s" % (
         datetime.now().strftime("%FT%02H:%02M:%02S"),
         h0, h, z0, turbine.name)
     print(text)
@@ -659,15 +696,15 @@ def read_forecast( filepath ):
     return [ np.array(labels), np.array(forecast) ]
 
 
-def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list, max_depth_list, max_features_list, results):
+def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list, criterion_list, max_features_list, results):
     """
-    Based on forecast errors, set optimal n_estimators, max_depth, max_features RF model parameters.
+    Based on forecast errors, set optimal n_estimators, criterion, max_features RF model parameters.
 
     :param model: RF model based on custom class.
     :param start_loc_dt: Start time, localized (aware) datetime object.
     :param stop_loc_dt: Stop time, localized (aware) datetime object.
     :param n_estimators: RF model parameter.
-    :param max_depth: RF model parameter.
+    :param criterion: RF model parameter.
     :param max_features: RF model parameter.
     :param results: Results object reference.
 
@@ -675,44 +712,49 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
         [t, labels, forecast]
     """
 
+    text = "\nRF parameter tuning (%s): n_estimators - %s, max_dept - %s, max_features - %s" % (
+        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        str(n_estimators_list), str(criterion_list), str(max_features_list))
+    print(text)
+    results.append_log(text)
+
     res_3d = []
 
-    m = 1
-    n = 24
-    g = 0
-
-    model.set_vars(m, n, g)
+    # m = 1
+    # n = 24
+    # g = 0
+    #
+    # model.set_vars(m, n, g)
 
     for start, stop in zip(start_loc_dt, stop_loc_dt):
+
+        text = " New dates (%s): %s-%s" % (
+            datetime.now().strftime("%FT%02H:%02M:%02S"),
+            start.strftime("%FT%02H:%02M:%02S"),
+            stop.strftime("%FT%02H:%02M:%02S") )
+        print(text)
+        results.append_log(text)
+
         res_2d = []
+
         for n_estimators in n_estimators_list:
-            for max_depth in max_depth_list:
+            for criterion in criterion_list:
                 for max_features in max_features_list:
 
-                    print("(%s) Starting with parameters: n_estimators - %s, max_dept - %s, max_features - %s" % (
-                        datetime.now().strftime("%F%T"),
-                        str(n_estimators), str(max_depth), str(max_features)))
-
-                    model.set_parameters(n_estimators, "mse", max_depth, max_features)  # Set parameters
+                    model.set_parameters(n_estimators, criterion, max_features)  # Set parameters
                     [t, labels, forecast] = model.run(start, stop)
 
-                    if max_depth is None:
-                        filename = "RF-forecast_%s_%s_%d_%s_%s" % (
-                            start.strftime("%F"),
-                            stop.strftime("%F"),
-                            n_estimators, max_depth, max_features)
-                    else:
-                        filename = "RF-forecast_%s_%s_%d_%d_%s" % (
-                            start.strftime("%F"),
-                            stop.strftime("%F"),
-                        n_estimators, max_depth, max_features)
+                    filename = "RF-forecast-10-param-tuning_%s-%s_%d-%s-%s" % (
+                        start.strftime("%F"),
+                        stop.strftime("%F"),
+                        n_estimators, criterion, max_features)
 
                     results.save_forecast(labels, forecast, filename)
                     results.plot_forecast(labels, forecast, filename)
 
                     errors = calc_errors(labels, forecast)
                     res_tmp = np.array([
-                        np.concatenate(([n_estimators, max_depth, max_features], errors, t), axis=0)])
+                        np.concatenate(([n_estimators, criterion, max_features], errors, t), axis=0)])
 
                     if len(res_2d) > 0:
                         res_2d = np.concatenate((res_2d, res_tmp), axis=0)
@@ -725,9 +767,7 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
             res_3d = np.array([res_2d])
 
     # Save full (3D) collection of errors and times
-    filename = "RF-model-parameter-optimization-errors%s_%s" % (
-        start.strftime("%F"),
-        stop.strftime("%F"))
+    filename = "RF-param-tuning-errors"
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
@@ -740,81 +780,89 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
 
     # Save average errors and times
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add parameter variables
-    c_names = ["n_estimators", "max_depth", "max_features", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
-    filename = "RF-model-parameter-optimization-errors-avg_%s_%s" % (
-        start.strftime("%F"),
-        stop.strftime("%F"))
+    c_names = ["n_estimators", "criterion", "max_features", "MAE", "MAPE",
+        "MSE", "RMSE", "t_tot [s]", "t_fit [s]", "t_for [s]"]
+    filename = "RF-param-tuning-errors-avg"
     # TODO save_csv produces error: 'TypeError: 100 is not a string'
     results.save_csv( data, c_names, filename )
 
     # TODO: add plot function for model parameters?
     # Plot average errors and times
-    results.plot_rf_optimization( data, filename )
+    # results.plot_rf_optimization( data, filename )
 
     # Find optimal parameter combination
-    [n_estimators_opt, max_depth_opt, max_features_opt] = data[-1, 0:3]   # Last is optimal by default
-    e_opt = data[-1, -2]
+    [n_estimators_opt, criterion_opt, max_features_opt] = data[-1, 0:3]   # Last is optimal by default
+    e_opt = float(data[-1, -4])
     for i in range(0, data.shape[0]-1):
-        if data[i, -2] < e_opt:
-            e_opt = data[i, -2]
-            [n_estimators_opt, max_depth_opt, max_features_opt] = data[i, 0:3]
+        if float(data[i, -4]) < e_opt:
+            e_opt = float(data[i, -4])
+            [n_estimators_opt, criterion_opt, max_features_opt] = data[i, 0:3]
 
     # Tune RF model to optimal parameters
-    if max_depth_opt is not None:
-        max_depth_opt = int(max_depth_opt)
-    if max_features_opt is not None:
-        max_features_opt = str(max_features_opt)
-    model.set_parameters(int(n_estimators_opt), "mse", max_depth_opt, max_features_opt)
+    if max_features_opt is not "auto":
+        max_features_opt = int(max_features_opt)
+    model.set_parameters(int(n_estimators_opt), criterion_opt, max_features_opt)
 
 
-def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, c_list, epsilon_list, gamma_list, results):
+def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, kernel_list, c_list, epsilon_list, results):
     """
     Based on forecast errors, set optimal C, epsilon, gamma SVR model parameters.
 
     :param model: RF model based on custom class.
     :param start_loc_dt: Start time, localized (aware) datetime object.
     :param stop_loc_dt: Stop time, localized (aware) datetime object.
+    :param kernel_list: SVR model parameter.
     :param c_list: SVR model parameter.
     :param epsilon_list: SVR model parameter.
-    :param gamma_list: SVR model parameter.
     :param results: Results object reference.
 
     :return: List containing elapsed time, actual and forecasted values
         [t, labels, forecast]
     """
 
+    text = "\nSVR parameter tuning (%s): kernel - %s, c - %s, epsilon - %s" % (
+        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        str(kernel_list), str(c_list), str(epsilon_list))
+    print(text)
+    results.append_log(text)
+
     res_3d = []
 
-    m = 1
-    n = 24
-    g = 0
-
-    model.set_vars(m, n, g)
+    # m = 1
+    # n = 24
+    # g = 0
+    #
+    # model.set_vars(m, n, g)
 
     for start, stop in zip(start_loc_dt, stop_loc_dt):
+
+        text = " New dates (%s): %s-%s" % (
+            datetime.now().strftime("%FT%02H:%02M:%02S"),
+            start.strftime("%FT%02H:%02M:%02S"),
+            stop.strftime("%FT%02H:%02M:%02S") )
+        print(text)
+        results.append_log(text)
+
         res_2d = []
-        for c in c_list:
-            for epsilon in epsilon_list:
-                for gamma in gamma_list:
 
-                    print("(%s) Starting with parameters: c - %s, epsilon - %s, gamma - %s" % (
-                        datetime.now().strftime("%F%T"),
-                        str(c), str(epsilon), str(gamma)))
+        for kernel in kernel_list:
+            for c in c_list:
+                for epsilon in epsilon_list:
 
-                    model.set_parameters(kernel='rbf', c=c, epsilon=epsilon, gamma=gamma)  # Set parameters
+                    model.set_parameters(kernel=kernel, c=c, epsilon=epsilon)  # Set parameters
                     [t, labels, forecast] = model.run(start, stop)
 
-                    filename = "SVR-forecast_%s_%s_%f_%f_%s" % (
+                    filename = "SVR-forecast-10-param-tuning_%s-%s_%s-%.2f-%.2f" % (
                         start.strftime("%F"),
                         stop.strftime("%F"),
-                        c, epsilon, gamma)
+                        kernel, c, epsilon)
 
                     results.save_forecast(labels, forecast, filename)
                     results.plot_forecast(labels, forecast, filename)
 
                     errors = calc_errors(labels, forecast)
                     res_tmp = np.array([
-                        np.concatenate(([c, epsilon, gamma], errors, t), axis=0)])
+                        np.concatenate(([kernel, c, epsilon], errors, t), axis=0)])
 
                     if len(res_2d) > 0:
                         res_2d = np.concatenate((res_2d, res_tmp), axis=0)
@@ -827,9 +875,7 @@ def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, c_list, epsilon_
             res_3d = np.array([res_2d])
 
     # Save full (3D) collection of errors and times
-    filename = "SVR-model-parameter-optimization-errors%s_%s" % (
-        start.strftime("%F"),
-        stop.strftime("%F"))
+    filename = "SVR-param-tuning-errors"
     results.save_npz(res_3d, filename)
 
     # Calculate average errors and times
@@ -842,26 +888,25 @@ def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, c_list, epsilon_
 
     # Save average errors and times
     data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add parameter variables
-    c_names = ["C", "epsilon", "gamma", "MAE", "MAPE", "MSE", "RMSE", "t [s]"]
-    filename = "SVR-model-parameter-optimization-errors-avg_%s_%s" % (
-        start.strftime("%F"),
-        stop.strftime("%F"))
+    c_names = ["Kernel", "C", "epsilon", "MAE", "MAPE", "MSE", "RMSE",
+        "t_tot [s]", "t_fit [s]", "t_for [s]"]
+    filename = "SVR-param-tuning-errors-avg"
     results.save_csv( data, c_names, filename )
 
     # TODO: add plot function for model parameters?
     # Plot average errors and times
-    results.plot_rf_optimization( data, filename )
+    # results.plot_rf_optimization( data, filename )
 
     # Find optimal parameter combination
-    [c_opt, epsilon_opt, gamma_opt] = data[-1, 0:3]   # Last is optimal by default
-    e_opt = data[-1, -2]
+    [kernel_opt, c_opt, epsilon_opt] = data[-1, 0:3]   # Last is optimal by default
+    e_opt = float(data[-1, -4])
     for i in range(0, data.shape[0]-1):
-        if data[i, -2] < e_opt:
-            e_opt = data[i, -2]
-            [c_opt, epsilon_opt, gamma_opt] = data[i, 0:3]
+        if float(data[i, -4]) < e_opt:
+            e_opt = float(data[i, -4])
+            [kernel_opt, c_opt, epsilon_opt] = data[i, 0:3]
 
     # Tune SVR model to optimal parameters
-    model.set_parameters(kernel='rbf', c=float(c_opt), epsilon=float(epsilon_opt), gamma=str(gamma_opt))
+    model.set_parameters(kernel=kernel_opt, c=float(c_opt), epsilon=float(epsilon_opt))
 
 
 if __name__ == "__main__":

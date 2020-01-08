@@ -51,7 +51,8 @@ def plot_forecast(labels, forecast, figname):
     ax1.plot(x, labels, label='actual')
     ax1.plot(x, forecast, label='forecast')
     ax1.set_title("Abs. Wind Speed")
-    ax1.set_ylabel("Speed (m/s)")
+    # ax1.set_ylabel("Speed ($ms^{-1}$)")
+    ax1.set_ylabel(r"Speed $(\frac{m}{s})$")
     ax1.set_xlabel("Time (h)")
     ax1.legend()
 
@@ -126,10 +127,10 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
     ax.set_ylim(0, 5)
     ax.set_zlim(0, Y.max())
 
-    # ax.set_title("Forecast comparison")
+    ax.set_title("Forecast comparison")
     ax.set_xlabel("Time (h)", labelpad=30)
     ax.set_ylabel("Model", labelpad=25)
-    ax.set_zlabel("Speed (m/s)", labelpad=10)
+    ax.set_zlabel(r"Speed $(\frac{m}{s})$", labelpad=10)
     ax.legend()
 
     ax.set_xticks([i*4 for i in range(0,6) ])
@@ -211,7 +212,7 @@ def plot_power_forecast(power_2d, ext_2d, p_curve, names, figname):
 
     ax2.set_title("WT Power Curve")
     # ax2.set_ylabel("Power (kW)")
-    ax2.set_xlabel("Speed (m/s)")
+    ax2.set_xlabel(r"Speed $(\frac{m}{s})$")
     # ax2.legend()
 
     fig.savefig("%s.%s" % (figname, extension))
@@ -258,7 +259,7 @@ def plot_var_tuning( model_name, data, figname ):
 
     plt.grid(zorder=2)
 
-    plt.title("%s optimization" % model_name)
+    plt.title("%s Tuning" % model_name)
     plt.xlabel("M")
     plt.ylabel("Grid")
 
@@ -286,18 +287,24 @@ def plot_n_eval( data, figname ):
 
     ax1.plot(x, data[:, 6], color='C0', linestyle="-", zorder=3, label="RMSE")
 
-    ax1.plot(x, data[:, 5], color='C7', linestyle="--", zorder=2, label="MSE")
-    ax1.plot(x, data[:, 5], color='black', linestyle="-", zorder=1)
+    ax1.plot(x, data[:, 5], color='black', linestyle="--", zorder=2, label="MSE")
+    ax1.plot(x, data[:, 5], color='#bbbbbb', linestyle="-", zorder=1)
 
-    #ax1.plot(x, data[:, 4], color='C7', linestyle="-.", zorder=2, label="MAPE")
-    #ax1.plot(x, data[:, 4], color='black', linestyle="-", zorder=1)
+    MAPE_norm = data[:, 4] / data[:, 4].max()
 
-    ax1.plot(x, data[:, 3], color='C7', linestyle=":", zorder=2, label="MAE")
-    ax1.plot(x, data[:, 3], color='black', linestyle="-", zorder=1)
+    ax1.plot(x, MAPE_norm, color='black', linestyle="-.", zorder=2, label="nMAPE")
+    ax1.plot(x, MAPE_norm, color='#bbbbbb', linestyle="-", zorder=1)
 
-    ax1.set_title("N Variable Test")
+    ax1.plot(x, data[:, 3], color='black', linestyle=":", zorder=2, label="MAE")
+    ax1.plot(x, data[:, 3], color='#bbbbbb', linestyle="-", zorder=1)
+
+    ax1.legend()
+
+    ax1.set_title("N Variable Evaluation")
     ax1.set_xlabel("N")
     ax1.set_ylabel("Error")
+
+    # ax1.set_xlim(x.min(), x.max())
 
     fig.savefig("%s.%s" % (figname, extension))
     # fig.show()

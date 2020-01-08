@@ -101,7 +101,7 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
     ax.set_ylim(0, 5)
     ax.set_zlim(0, Y.max())
 
-    # ax.set_title("Forecast comparison")
+    ax.set_title("Forecast Comparison")
     ax.set_xlabel("Time (h)", labelpad=30)
     ax.set_ylabel("Model", labelpad=25)
     ax.set_zlabel("Speed (m/s)", labelpad=10)
