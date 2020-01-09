@@ -49,12 +49,12 @@ def main():
     # Local time training data start/stop (forecast begins on stop hour)
     # Validation training data start/stop times
     valid_start_dt = [
-        datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
-        datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
-        datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
-        datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0),
-        datetime(2016, 9, 15, 0), datetime(2016, 10, 15, 0),
-        datetime(2016, 11, 15, 0), datetime(2016, 12, 15, 0)]
+        datetime(2017, 1, 15, 0), datetime(2017, 2, 15, 0),
+        datetime(2017, 3, 15, 0), datetime(2017, 4, 15, 0),
+        datetime(2017, 5, 15, 0), datetime(2017, 6, 15, 0),
+        datetime(2017, 7, 15, 0), datetime(2017, 8, 15, 0),
+        datetime(2017, 9, 15, 0), datetime(2017, 10, 15, 0),
+        datetime(2017, 11, 15, 0), datetime(2017, 12, 15, 0)]
     valid_stop_dt = [
         datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
         datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
@@ -65,10 +65,10 @@ def main():
 
     # Test training data start/stop times
     test_start_dt = [
-        datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
-        datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
-        datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
-        datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
+        datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+        datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+        datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+        datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0)]
     test_stop_dt = [
         datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
         datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
@@ -109,11 +109,13 @@ def main():
 
     n_estimators_list = [10, 100, 1000]
     criterion_list = ["mse", "mae"]
-    max_features_list = [2, 4, 8, 'auto']
+    #max_features_list = [2, 4, 8, 'auto']
+    max_features_list = ['auto'] # Auto normally takes all 10
 
     c_list = [0.01, 1, 100]
     epsilon_list = [0.1, 0.2, 0.4, 0.8]
-    kernel_list = ["poly", "rbf", "sigmoid"]
+    #kernel_list = ["poly", "rbf", "sigmoid"]
+    kernel_list = ["poly", "rbf"] # Sigmoid yields bad results
 
     n_estimators_optimal = 100
     criterion_optimal = None
@@ -126,10 +128,6 @@ def main():
         Rf(data_dir, "RF"),
         Svr(data_dir, "SVR")
     ]
-
-    models[0].set_parameters()
-    models[1].set_parameters()
-    models[2].set_parameters(gamma="auto")
 
     # Initiate new results directory and global object
     date_str = datetime.utcnow().strftime("%F")
@@ -172,57 +170,32 @@ def main():
     results.append_log(text)
 
 
-    # models[0].set_vars(1,24,0)
-    # models[1].set_vars(1,24,0)
-    # models[2].set_vars(1,24,0)
-    # models[0].set_parameters()
-    # models[1].set_parameters()
-    # models[2].set_parameters(gamma="auto")
-    #
+    # Tune model parameters based on validation training data
+    tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
+        n_estimators_list, criterion_list, max_features_list, results )
+    tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
+        kernel_list, c_list, epsilon_list, results )
+
+    # # Tune model variables based on validation training data
     # tune_model_vars(
     #     models[1], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
     # tune_model_vars(
     #     models[2], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
     #
-    # models[0].set_vars(1,24,0)
-    # models[1].set_vars(1,24,0)
-    # models[2].set_vars(1,24,0)
-    # models[0].set_parameters()
-    # models[1].set_parameters()
-    # models[2].set_parameters()
+    # # Compare model forecasts based on test training data
+    # compare_models(
+    #     models, test_start_loc_dt, test_stop_loc_dt, results )
     #
-    # tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
-    #     n_estimators_list, criterion_list, max_features_list, results)
-    # tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
-    #     kernel_list, c_list, epsilon_list, results)
-
-
-    # Tune model parameters based on validation training data
-    tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
-        n_estimators_list, criterion_list, max_features_list, results)
-    tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
-        kernel_list, c_list, epsilon_list, results)
-
-    # Tune model variables based on validation training data
-    tune_model_vars(
-        models[1], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
-    tune_model_vars(
-        models[2], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
-
-    # Compare model forecasts based on test training data
-    compare_models(
-        models, test_start_loc_dt, test_stop_loc_dt, results )
-
-    # Extrapolate forecasted wind speeds and calulate power
-    extrapolate_and_calc_power (
-        models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
-
-    # # Evaluate the influence of the N variable for each model
-    N = [n for n in range(1,25)]
-    eval_model_n_var(
-        models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
-    eval_model_n_var(
-        models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
+    # # Extrapolate forecasted wind speeds and calulate power
+    # extrapolate_and_calc_power (
+    #     models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
+    #
+    # # # Evaluate the influence of the N variable for each model
+    # N = [n for n in range(1,25)]
+    # eval_model_n_var(
+    #     models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
+    # eval_model_n_var(
+    #     models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
 
     # Output and log
     text = "Finished (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
@@ -712,7 +685,7 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
         [t, labels, forecast]
     """
 
-    text = "\nRF parameter tuning (%s): n_estimators - %s, max_dept - %s, max_features - %s" % (
+    text = "\nRF parameter tuning (%s): n_estimators - %s, criterion_list - %s, max_features - %s" % (
         datetime.now().strftime("%FT%02H:%02M:%02S"),
         str(n_estimators_list), str(criterion_list), str(max_features_list))
     print(text)
