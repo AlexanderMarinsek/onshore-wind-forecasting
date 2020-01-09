@@ -134,7 +134,7 @@ def main():
     results = Results("./Results", "%sx01" % date_str)
 
     # Output and log
-    text = "Begin (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
+    text = "Begin (%s)" % datetime.now().strftime("%FT%T")  # %FT%02H:%02M:%02S
     print(text)
     results.append_log(text)
 
@@ -198,7 +198,7 @@ def main():
     #     models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
 
     # Output and log
-    text = "Finished (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
+    text = "Finished (%s)" % datetime.now().strftime("%FT%T")
     print(text)
     results.append_log(text)
 
@@ -220,7 +220,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
 
     # Output and log
     text = "\nTune %s M-N-G variables (%s): %s-%s-%s" % (
-        model.name, datetime.now().strftime("%FT%02H:%02M:%02S"),
+        model.name, datetime.now().strftime("%FT%T"),
         str(M), str(N), str(G) )
     print(text)
     results.append_log(text)
@@ -230,9 +230,9 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -307,7 +307,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
 
     # Output and log
     text = "Tuned %s M-N-G variables (%s): %d-%d-%d" % (
-        model.name, datetime.now().strftime("%FT%02H:%02M:%02S"), M_opt, N_opt, G_opt)
+        model.name, datetime.now().strftime("%FT%T"), M_opt, N_opt, G_opt)
     print(text)
     results.append_log(text)
 
@@ -329,7 +329,7 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
 
     # Output and log
     text = "\nCompare models (%s): %s" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"), str(names) )
+        datetime.now().strftime("%FT%T"), str(names) )
     print(text)
     results.append_log(text)
 
@@ -338,9 +338,9 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -425,7 +425,7 @@ def eval_model_n_var( model, start_loc_dt, stop_loc_dt, N, results ):
 
     text = "\nEvaluate %s N (%s): %d-%s-%d" % (
         model.name,
-        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        datetime.now().strftime("%FT%T"),
         m, str(N), g)
     print(text)
     results.append_log(text)
@@ -435,9 +435,9 @@ def eval_model_n_var( model, start_loc_dt, stop_loc_dt, N, results ):
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -520,7 +520,7 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
 
     # Output and log
     text = "\nCalculate power (%s): %d %d %.2f %s" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        datetime.now().strftime("%FT%T"),
         h0, h, z0, turbine.name)
     print(text)
     results.append_log(text)
@@ -530,9 +530,9 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -686,7 +686,7 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
     """
 
     text = "\nRF parameter tuning (%s): n_estimators - %s, criterion_list - %s, max_features - %s" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        datetime.now().strftime("%FT%T"),
         str(n_estimators_list), str(criterion_list), str(max_features_list))
     print(text)
     results.append_log(text)
@@ -702,9 +702,9 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -772,7 +772,7 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
             [n_estimators_opt, criterion_opt, max_features_opt] = data[i, 0:3]
 
     # Tune RF model to optimal parameters
-    if max_features_opt is not "auto":
+    if max_features_opt != "auto":
         max_features_opt = int(max_features_opt)
     model.set_parameters(int(n_estimators_opt), criterion_opt, max_features_opt)
 
@@ -794,7 +794,7 @@ def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, kernel_list, c_l
     """
 
     text = "\nSVR parameter tuning (%s): kernel - %s, c - %s, epsilon - %s" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        datetime.now().strftime("%FT%T"),
         str(kernel_list), str(c_list), str(epsilon_list))
     print(text)
     results.append_log(text)
@@ -810,9 +810,9 @@ def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, kernel_list, c_l
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
