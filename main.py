@@ -1,4 +1,5 @@
 from bl_model import Bl
+from lstm_model import Lstm
 from rf_model import Rf
 from svr_model import Svr
 from results import Results
@@ -126,7 +127,8 @@ def main():
     models = [
         Bl(data_dir, "BL"),
         Rf(data_dir, "RF"),
-        Svr(data_dir, "SVR")
+        Svr(data_dir, "SVR"),
+        Lstm(data_dir, "LSTM")
     ]
 
     # Initiate new results directory and global object
@@ -171,10 +173,10 @@ def main():
 
 
     # Tune model parameters based on validation training data
-    tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
-        n_estimators_list, criterion_list, max_features_list, results )
-    tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
-        kernel_list, c_list, epsilon_list, results )
+    # tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
+    #    n_estimators_list, criterion_list, max_features_list, results )
+    # tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
+    #    kernel_list, c_list, epsilon_list, results )
 
     # # Tune model variables based on validation training data
     # tune_model_vars(
@@ -182,9 +184,9 @@ def main():
     # tune_model_vars(
     #     models[2], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
     #
-    # # Compare model forecasts based on test training data
+    # Compare model forecasts based on test training data
     # compare_models(
-    #     models, test_start_loc_dt, test_stop_loc_dt, results )
+    #    models, test_start_loc_dt, test_stop_loc_dt, results )
     #
     # # Extrapolate forecasted wind speeds and calulate power
     # extrapolate_and_calc_power (
@@ -379,7 +381,8 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
             start.strftime("%F"),
             stop.strftime("%F"))
         results.save_comparison_forecast(lab_for_2d, names.copy(), filename)
-        results.plot_comparison_forecast(lab_for_2d, names.copy(), filename)
+        # TODO: plot_comparison_forecast doesn't work for lstm?
+        # results.plot_comparison_forecast(lab_for_2d, names.copy(), filename)
 
         # Append 2D results to D array containing the time dimension
         if len(res_3d) > 0:
