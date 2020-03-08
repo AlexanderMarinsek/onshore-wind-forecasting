@@ -48,38 +48,38 @@ def main():
 
     # Local time training data start/stop (forecast begins on stop hour)
     # Validation training data start/stop times
-    # valid_start_dt = [
-    #     datetime(2015, 1, 15, 0), datetime(2015, 2, 15, 0),
-    #     datetime(2015, 3, 15, 0), datetime(2015, 4, 15, 0),
-    #     datetime(2015, 5, 15, 0), datetime(2015, 6, 15, 0),
-    #     datetime(2015, 7, 15, 0), datetime(2015, 8, 15, 0),
-    #     datetime(2015, 9, 15, 0), datetime(2015, 10, 15, 0),
-    #     datetime(2015, 11, 15, 0), datetime(2015, 12, 15, 0)]
-    # valid_stop_dt = [
-    #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
-    #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
-    #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
-    #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
-    #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
-    #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+    valid_start_dt = [
+        datetime(2017, 1, 15, 0), datetime(2017, 2, 15, 0),
+        datetime(2017, 3, 15, 0), datetime(2017, 4, 15, 0),
+        datetime(2017, 5, 15, 0), datetime(2017, 6, 15, 0),
+        datetime(2017, 7, 15, 0), datetime(2017, 8, 15, 0),
+        datetime(2017, 9, 15, 0), datetime(2017, 10, 15, 0),
+        datetime(2017, 11, 15, 0), datetime(2017, 12, 15, 0)]
+    valid_stop_dt = [
+        datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+        datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+        datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+        datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
+        datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
+        datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+
+    # Test training data start/stop times
+    test_start_dt = [
+        datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+        datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+        datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+        datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0)]
+    test_stop_dt = [
+        datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
+        datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
+        datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
+        datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
+
+    # valid_start_dt = [datetime(2017, 2, 1, 0), datetime(2017, 3, 1, 0)]
+    # valid_stop_dt = [datetime(2017, 2, 3, 0), datetime(2017, 3, 3, 0)]
     #
-    # # Test training data start/stop times
-    # test_start_dt = [
-    #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
-    #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
-    #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
-    #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
-    # test_stop_dt = [
-    #     datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
-    #     datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
-    #     datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
-    #     datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
-
-    valid_start_dt = [datetime(2017, 2, 1, 0), datetime(2017, 3, 1, 0)]
-    valid_stop_dt = [datetime(2017, 2, 3, 0), datetime(2017, 3, 3, 0)]
-
-    test_start_dt = [datetime(2018, 2, 1, 0)]
-    test_stop_dt = [datetime(2018, 2, 3, 0)]
+    # test_start_dt = [datetime(2018, 2, 1, 0), datetime(2018, 3, 1, 0)]
+    # test_stop_dt = [datetime(2018, 2, 3, 0), datetime(2018, 3, 3, 0)]
 
     # Convert to localized, aware datetime object (2018-...00:00+02:00)
     valid_start_loc_dt = [tz.localize(s) for s in valid_start_dt]
@@ -108,34 +108,20 @@ def main():
     data_dir = "../ERA5-Land/Area-44.5-28.5-44.7-28.7-10mVw-10mUw-2mt-Sp-Ssrd-2md"
 
     n_estimators_list = [10, 100, 1000]
-    # criterion_list = ["mse", "mae"]
-    criterion_list = ["mse"]
-    max_features_list = [2, 4, 8, 'auto']
-    # max_features_list = ['auto'] # Auto normally takes all 10
+    criterion_list = ["mse", "mae"]
+    #max_features_list = [2, 4, 8, 'auto']
+    max_features_list = ['auto'] # Auto normally takes all 10
 
     c_list = [0.01, 1, 100]
     epsilon_list = [0.1, 0.2, 0.4, 0.8]
-    # kernel_list = ["sigmoid"]
-    # kernel_list = ["poly", "rbf"] # Sigmoid yields bad results
-    kernel_list = ["poly"] # Sigmoid yields bad results
+    #kernel_list = ["poly", "rbf", "sigmoid"]
+    kernel_list = ["poly", "rbf"] # Sigmoid yields bad results
 
-    n_estimators_opt = 100
-    criterion_opt = "mse"
-    max_features_opt = "auto"
-    max_depth_opt = None
+    n_estimators_optimal = 100
+    criterion_optimal = None
 
-    kernel_opt = "rbf"
-    c_opt = 0.01
-    epsilon_opt = 0.1
-    gamma_opt = "scale"
-
-    m_opt_rf = 1
-    n_opt_rf = 24
-    g_opt_rf = 0
-
-    m_opt_svr = 1
-    n_opt_svr = 24
-    g_opt_svr = 3
+    c_optimal = 10
+    epsilon_optimal = 0.8
 
     models = [
         Bl(data_dir, "BL"),
@@ -143,18 +129,12 @@ def main():
         Svr(data_dir, "SVR")
     ]
 
-    # models[1].set_parameters( n_estimators_opt, criterion_opt, max_features_opt, max_depth_opt )
-    # models[2].set_parameters( kernel_opt, c_opt, epsilon_opt, gamma_opt )
-    #
-    # models[1].set_vars( m_opt_rf, n_opt_rf, g_opt_rf )
-    # models[2].set_vars( m_opt_svr, n_opt_svr, g_opt_svr )
-
     # Initiate new results directory and global object
     date_str = datetime.utcnow().strftime("%F")
     results = Results("./Results", "%sx01" % date_str)
 
     # Output and log
-    text = "Begin (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
+    text = "Begin (%s)" % datetime.now().strftime("%FT%T")  # %FT%02H:%02M:%02S
     print(text)
     results.append_log(text)
 
@@ -191,26 +171,26 @@ def main():
 
 
     # Tune model parameters based on validation training data
-    # tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
-    #     n_estimators_list, criterion_list, max_features_list, results )
-    # tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
-    #     kernel_list, c_list, epsilon_list, results )
+    tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
+        n_estimators_list, criterion_list, max_features_list, results )
+    tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
+        kernel_list, c_list, epsilon_list, results )
 
     # # Tune model variables based on validation training data
     # tune_model_vars(
     #     models[1], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
     # tune_model_vars(
     #     models[2], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
-
+    #
     # # Compare model forecasts based on test training data
     # compare_models(
     #     models, test_start_loc_dt, test_stop_loc_dt, results )
-
+    #
     # # Extrapolate forecasted wind speeds and calulate power
     # extrapolate_and_calc_power (
     #     models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
-
-    # # Evaluate the influence of the N variable for each model
+    #
+    # # # Evaluate the influence of the N variable for each model
     # N = [n for n in range(1,25)]
     # eval_model_n_var(
     #     models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
@@ -218,7 +198,7 @@ def main():
     #     models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
 
     # Output and log
-    text = "Finished (%s)" % datetime.now().strftime("%FT%02H:%02M:%02S")
+    text = "Finished (%s)" % datetime.now().strftime("%FT%T")
     print(text)
     results.append_log(text)
 
@@ -240,7 +220,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
 
     # Output and log
     text = "\nTune %s M-N-G variables (%s): %s-%s-%s" % (
-        model.name, datetime.now().strftime("%FT%02H:%02M:%02S"),
+        model.name, datetime.now().strftime("%FT%T"),
         str(M), str(N), str(G) )
     print(text)
     results.append_log(text)
@@ -250,9 +230,9 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -327,7 +307,7 @@ def tune_model_vars(model, start_loc_dt, stop_loc_dt, M, N, G, results):
 
     # Output and log
     text = "Tuned %s M-N-G variables (%s): %d-%d-%d" % (
-        model.name, datetime.now().strftime("%FT%02H:%02M:%02S"), M_opt, N_opt, G_opt)
+        model.name, datetime.now().strftime("%FT%T"), M_opt, N_opt, G_opt)
     print(text)
     results.append_log(text)
 
@@ -349,7 +329,7 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
 
     # Output and log
     text = "\nCompare models (%s): %s" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"), str(names) )
+        datetime.now().strftime("%FT%T"), str(names) )
     print(text)
     results.append_log(text)
 
@@ -358,9 +338,9 @@ def compare_models( models, start_loc_dt, stop_loc_dt, results ):
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -445,7 +425,7 @@ def eval_model_n_var( model, start_loc_dt, stop_loc_dt, N, results ):
 
     text = "\nEvaluate %s N (%s): %d-%s-%d" % (
         model.name,
-        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        datetime.now().strftime("%FT%T"),
         m, str(N), g)
     print(text)
     results.append_log(text)
@@ -455,9 +435,9 @@ def eval_model_n_var( model, start_loc_dt, stop_loc_dt, N, results ):
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -540,7 +520,7 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
 
     # Output and log
     text = "\nCalculate power (%s): %d %d %.2f %s" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        datetime.now().strftime("%FT%T"),
         h0, h, z0, turbine.name)
     print(text)
     results.append_log(text)
@@ -550,9 +530,9 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -706,7 +686,7 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
     """
 
     text = "\nRF parameter tuning (%s): n_estimators - %s, criterion_list - %s, max_features - %s" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        datetime.now().strftime("%FT%T"),
         str(n_estimators_list), str(criterion_list), str(max_features_list))
     print(text)
     results.append_log(text)
@@ -722,9 +702,9 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
@@ -792,7 +772,7 @@ def tune_rf_model_parameters(model, start_loc_dt, stop_loc_dt, n_estimators_list
             [n_estimators_opt, criterion_opt, max_features_opt] = data[i, 0:3]
 
     # Tune RF model to optimal parameters
-    if max_features_opt != 'auto':
+    if max_features_opt != "auto":
         max_features_opt = int(max_features_opt)
     model.set_parameters(int(n_estimators_opt), criterion_opt, max_features_opt)
 
@@ -814,7 +794,7 @@ def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, kernel_list, c_l
     """
 
     text = "\nSVR parameter tuning (%s): kernel - %s, c - %s, epsilon - %s" % (
-        datetime.now().strftime("%FT%02H:%02M:%02S"),
+        datetime.now().strftime("%FT%T"),
         str(kernel_list), str(c_list), str(epsilon_list))
     print(text)
     results.append_log(text)
@@ -830,9 +810,9 @@ def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, kernel_list, c_l
     for start, stop in zip(start_loc_dt, stop_loc_dt):
 
         text = " New dates (%s): %s-%s" % (
-            datetime.now().strftime("%FT%02H:%02M:%02S"),
-            start.strftime("%FT%02H:%02M:%02S"),
-            stop.strftime("%FT%02H:%02M:%02S") )
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
         print(text)
         results.append_log(text)
 
