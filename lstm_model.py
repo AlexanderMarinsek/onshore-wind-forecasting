@@ -1,8 +1,10 @@
+from keras.callbacks import EarlyStopping
+
 from rf_converter import get_features_and_labels as get_features_and_labels
 
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Dropout
 from keras.layers import LSTM
 from datetime import datetime
 
@@ -16,14 +18,19 @@ class Lstm:
         self.set_vars()
 
 
-    # TODO: add relevant parameters
-    def set_parameters(self):
-        pass
+    def set_parameters(self, neurons=10, batch_size=32, epochs=100, dropout=0.0, activation='tanh', optimizer='adam', loss='mse', layers=1):
+        self.neurons = neurons
+        self.batch_size = batch_size
+        self.epochs = epochs
+        self.dropout = dropout
+        self.activation = activation
+        self.optimizer = optimizer
+        self.loss = loss
+        self.layers = layers
 
 
-    # TODO: add relevant parameters
     def get_parameters(self):
-        return []
+        return [self.neurons, self.batch_size, self.epochs, self.dropout, self.activation, self.optimizer, self.loss, self.layers]
 
 
     def set_vars(self, M=1, N=24, G=0):
@@ -65,13 +72,18 @@ class Lstm:
 
         # Initiate LSTM
         model = Sequential()
-        model.add(LSTM(50, input_shape=(train_features.shape[1], train_features.shape[2])))
-        model.add(Dense(1))
-        model.compile(loss='mae', optimizer='adam')
+        model.add(LSTM(self.neurons, return_sequences=(self.layers > 1), input_shape=(train_features.shape[1], train_features.shape[2])))
+        model.add(Dropout(self.dropout))
+        for i in range(self.layers - 1):
+            model.add(LSTM(self.neurons, return_sequences=(i + 2 < self.layers)))
+            model.add(Dropout(self.dropout))
+        model.add(Dense(1, activation=self.activation))
+        model.compile(loss=self.loss, optimizer=self.optimizer)
 
         fit_time = datetime.now()    # Timer 2
         # Teach LSTM model
-        model.fit(train_features, train_labels, epochs=10, batch_size=72, validation_data=(test_features, test_labels), verbose=2, shuffle=False)
+        es = EarlyStopping(monitor='val_loss', mode='min', verbose=1)
+        model.fit(train_features, train_labels, epochs=self.epochs, batch_size=self.batch_size, validation_split=0.2, verbose=2, shuffle=False, callbacks=[es])
 
         forecast_time = datetime.now()    # Timer 3
         # Create forecast based on test features
@@ -109,19 +121,27 @@ def main():
     lstm = Lstm("../ERA5-Land/Area-44.5-28.5-44.7-28.7", "LSTM")
     M = 1; N = 24; G = 0;
     lstm.set_vars(M, N, G)
-    lstm.set_parameters()
 
-    # Create forecast
-    [t, test_labels, forecast] = lstm.run( start_loc_dt, stop_loc_dt )
+    batch_sizes = [32]
+    input_num = 9
+    neurons_opt = int(((4 * (input_num ** 2)) + 3) / ((input_num ** 2) - 8))  # 4
+    neurons = [neurons_opt]
+    for batch_size in batch_sizes:
+        for neuron in neurons:
 
-    # TODO: add parameters to filename
-    filename = "SVR-forecast_%s-%s_%d-%d-%d" % (
-        start_loc_dt.strftime("%F"),
-        stop_loc_dt.strftime("%F"),
-        M, N, G)
-    results.plot_forecast(test_labels, forecast, filename)
+            lstm.set_parameters(neurons=neuron, batch_size=batch_size, epochs=10)
 
-    print (t)
+            # Create forecast
+            [t, test_labels, forecast] = lstm.run( start_loc_dt, stop_loc_dt )
+
+            filename = "SVR-forecast_%s-%s_%d-%d-%d_%d-%d" % (
+                start_loc_dt.strftime("%F"),
+                stop_loc_dt.strftime("%F"),
+                M, N, G,
+                neuron, batch_size)
+            results.plot_forecast(test_labels, forecast, filename)
+
+            print (t)
 
 if __name__ == "__main__":
     main()
