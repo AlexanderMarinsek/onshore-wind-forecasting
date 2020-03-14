@@ -1,4 +1,6 @@
+
 from bl_model import Bl
+from lstm_model import Lstm
 from rf_model import Rf
 from svr_model import Svr
 from results import Results
@@ -40,6 +42,12 @@ G: Feature data points Grid type:                  (CPU heavy)
     3: full (3x3)
 """
 
+from numpy.random import seed
+seed(1)
+# from tensorflow import set_random_seed
+# set_random_seed(1)
+from tensorflow import random
+random.set_seed(1)
 
 def main():
 
@@ -48,38 +56,38 @@ def main():
 
     # Local time training data start/stop (forecast begins on stop hour)
     # Validation training data start/stop times
-    valid_start_dt = [
-        datetime(2017, 1, 15, 0), datetime(2017, 2, 15, 0),
-        datetime(2017, 3, 15, 0), datetime(2017, 4, 15, 0),
-        datetime(2017, 5, 15, 0), datetime(2017, 6, 15, 0),
-        datetime(2017, 7, 15, 0), datetime(2017, 8, 15, 0),
-        datetime(2017, 9, 15, 0), datetime(2017, 10, 15, 0),
-        datetime(2017, 11, 15, 0), datetime(2017, 12, 15, 0)]
-    valid_stop_dt = [
-        datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
-        datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
-        datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
-        datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
-        datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
-        datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
-
-    # Test training data start/stop times
-    test_start_dt = [
-        datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
-        datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
-        datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
-        datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0)]
-    test_stop_dt = [
-        datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
-        datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
-        datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
-        datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
-
-    # valid_start_dt = [datetime(2017, 2, 1, 0), datetime(2017, 3, 1, 0)]
-    # valid_stop_dt = [datetime(2017, 2, 3, 0), datetime(2017, 3, 3, 0)]
+    # valid_start_dt = [
+    #     datetime(2015, 1, 15, 0), datetime(2015, 2, 15, 0),
+    #     datetime(2015, 3, 15, 0), datetime(2015, 4, 15, 0),
+    #     datetime(2015, 5, 15, 0), datetime(2015, 6, 15, 0),
+    #     datetime(2015, 7, 15, 0), datetime(2015, 8, 15, 0),
+    #     datetime(2015, 9, 15, 0), datetime(2015, 10, 15, 0),
+    #     datetime(2015, 11, 15, 0), datetime(2015, 12, 15, 0)]
+    # valid_stop_dt = [
+    #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+    #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+    #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+    #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
+    #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
+    #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
     #
-    # test_start_dt = [datetime(2018, 2, 1, 0), datetime(2018, 3, 1, 0)]
-    # test_stop_dt = [datetime(2018, 2, 3, 0), datetime(2018, 3, 3, 0)]
+    # # Test training data start/stop times
+    # test_start_dt = [
+    #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
+    #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
+    #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
+    #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
+    # test_stop_dt = [
+    #     datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
+    #     datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
+    #     datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
+    #     datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
+
+    valid_start_dt = [datetime(2017, 6, 1, 0)]
+    valid_stop_dt = [datetime(2017, 7, 1, 0)]
+
+    test_start_dt = [datetime(2018, 6, 1, 0)]
+    test_stop_dt = [datetime(2018, 7, 1, 0)]
 
     # Convert to localized, aware datetime object (2018-...00:00+02:00)
     valid_start_loc_dt = [tz.localize(s) for s in valid_start_dt]
@@ -88,7 +96,10 @@ def main():
     test_stop_loc_dt = [tz.localize(s) for s in test_stop_dt]
 
     # Preceeding hours; Forecast hours; Grid type
-    M = [1, 2, 4]; N = [24]; G = [0, 3];
+    M = [1, 2, 4]
+    N = [24]
+    # N = range(1, 25)
+    G = [0, 3];
 
     # Measurement height; WT hub height; Surface Roughness (0.1~0.3 for RO)
     h0 = 10; h = 100; z0 = 0.2;
@@ -123,11 +134,22 @@ def main():
     c_optimal = 10
     epsilon_optimal = 0.8
 
+    neurons_list = [1, 2, 4, 8, 16, 32]
+    layers_list = [1, 2, 3]
+    batch_size_list = [32]  # default
+
+    # neurons_opt = 2
+    # neurons_opt = 8
+    # layers_opt = 3
+
     models = [
-        Bl(data_dir, "BL"),
-        Rf(data_dir, "RF"),
-        Svr(data_dir, "SVR")
+        # Bl(data_dir, "BL"),
+        # Rf(data_dir, "RF"),
+        # Svr(data_dir, "SVR"),
+        Lstm(data_dir, "LSTM")
     ]
+
+    # models[0].set_parameters( neurons=neurons_opt, layers=layers_opt )
 
     # Initiate new results directory and global object
     date_str = datetime.utcnow().strftime("%F")
@@ -171,31 +193,37 @@ def main():
 
 
     # Tune model parameters based on validation training data
-    tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
-        n_estimators_list, criterion_list, max_features_list, results )
-    tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
-        kernel_list, c_list, epsilon_list, results )
+    # tune_rf_model_parameters( models[1], valid_start_loc_dt, valid_stop_loc_dt,
+    #    n_estimators_list, criterion_list, max_features_list, results )
+    # tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
+    #    kernel_list, c_list, epsilon_list, results )
+    # tune_lstm_model_parameters(models[0], valid_start_loc_dt, valid_stop_loc_dt,
+    #     neurons_list, batch_size_list, layers_list, results)
 
     # # Tune model variables based on validation training data
     # tune_model_vars(
     #     models[1], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
     # tune_model_vars(
     #     models[2], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
-    #
-    # # Compare model forecasts based on test training data
-    # compare_models(
-    #     models, test_start_loc_dt, test_stop_loc_dt, results )
-    #
+    # tune_model_vars(
+    #     models[0], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
+
+    # Compare model forecasts based on test training data
+    compare_models(
+       models, test_start_loc_dt, test_stop_loc_dt, results )
+
     # # Extrapolate forecasted wind speeds and calulate power
     # extrapolate_and_calc_power (
     #     models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
-    #
-    # # # Evaluate the influence of the N variable for each model
-    # N = [n for n in range(1,25)]
+    
+    # Evaluate the influence of the N variable for each model
+    N = [n for n in range(1,25)]
     # eval_model_n_var(
     #     models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
     # eval_model_n_var(
     #     models[2], test_start_loc_dt, test_stop_loc_dt, N, results )
+    # eval_model_n_var(
+    #     models[0], test_start_loc_dt, test_stop_loc_dt, N, results )
 
     # Output and log
     text = "Finished (%s)" % datetime.now().strftime("%FT%T")
@@ -880,6 +908,112 @@ def tune_svr_model_parameters(model, start_loc_dt, stop_loc_dt, kernel_list, c_l
 
     # Tune SVR model to optimal parameters
     model.set_parameters(kernel=kernel_opt, c=float(c_opt), epsilon=float(epsilon_opt))
+
+
+def tune_lstm_model_parameters(model, start_loc_dt, stop_loc_dt, neurons_list, batch_size_list, layers_list, results):
+    """
+    Based on forecast errors, set optimal n_estimators, criterion, max_features RF model parameters.
+
+    :param model: RF model based on custom class.
+    :param start_loc_dt: Start time, localized (aware) datetime object.
+    :param stop_loc_dt: Stop time, localized (aware) datetime object.
+    :param neurons_list: Number of neurons in a layer.
+    :param batch_size_list: Size of a batch.
+    :param layers_list: Number of layers.
+    :param results: Results object reference.
+
+    :return: List containing elapsed time, actual and forecasted values
+        [t, labels, forecast]
+    """
+
+    text = "\nLSTM parameter tuning (%s): neurons_list - %s, batch_size_list - %s, layers_list - %s" % (
+        datetime.now().strftime("%FT%T"),
+        str(neurons_list), str(batch_size_list), str(layers_list))
+    print(text)
+    results.append_log(text)
+
+    res_3d = []
+
+    # m = 1
+    # n = 24
+    # g = 0
+    #
+    # model.set_vars(m, n, g)
+
+    for start, stop in zip(start_loc_dt, stop_loc_dt):
+
+        text = " New dates (%s): %s-%s" % (
+            datetime.now().strftime("%FT%T"),
+            start.strftime("%FT%T"),
+            stop.strftime("%FT%T") )
+        print(text)
+        results.append_log(text)
+
+        res_2d = []
+
+        for neurons in neurons_list:
+            for batch_size in batch_size_list:
+                for layers in layers_list:
+
+                    model.set_parameters(neurons=neurons, batch_size=batch_size, layers=layers)  # Set parameters
+                    [t, labels, forecast] = model.run(start, stop)
+
+                    filename = "LSTM-forecast-10-param-tuning_%s-%s_%d-%d-%d" % (
+                        start.strftime("%F"),
+                        stop.strftime("%F"),
+                        neurons, batch_size, layers)
+
+                    results.save_forecast(labels, forecast, filename)
+                    results.plot_forecast(labels, forecast, filename)
+
+                    errors = calc_errors(labels, forecast)
+                    res_tmp = np.array([
+                        np.concatenate(([neurons, batch_size, layers], errors, t), axis=0)])
+
+                    if len(res_2d) > 0:
+                        res_2d = np.concatenate((res_2d, res_tmp), axis=0)
+                    else:
+                        res_2d = res_tmp
+
+        if len(res_3d) > 0:
+            res_3d = np.concatenate((res_3d, np.array([res_2d])), axis=0)
+        else:
+            res_3d = np.array([res_2d])
+
+    # Save full (3D) collection of errors and times
+    filename = "LSTM-param-tuning-errors"
+    results.save_npz(res_3d, filename)
+
+    # Calculate average errors and times
+    res_avg = np.zeros(res_3d[0,:,3:].shape)   # exclude parameter variables
+    length = res_3d.shape[0]    # number of dates
+    temp_res_3d = np.array(res_3d[:,:,3:], dtype=np.float32)
+
+    for i in range (0, length):
+        res_avg += ( 1.0 * temp_res_3d[i,:] / length )
+
+    # Save average errors and times
+    data = np.concatenate((res_3d[0,:,:3], res_avg), axis=1)    # Add parameter variables
+    c_names = ["neurons", "batch_size", "layers_list", "MAE", "MAPE",
+        "MSE", "RMSE", "t_tot [s]", "t_fit [s]", "t_for [s]"]
+    filename = "LSTM-param-tuning-errors-avg"
+    # TODO save_csv produces error: 'TypeError: 100 is not a string'
+    results.save_csv( data, c_names, filename )
+
+    # TODO: add plot function for model parameters?
+    # Plot average errors and times
+    # results.plot_rf_optimization( data, filename )
+
+    # Find optimal parameter combination
+    [neurons_opt, batch_size_opt, layers_opt] = data[-1, 0:3]   # Last is optimal by default
+    e_opt = float(data[-1, -4])
+    for i in range(0, data.shape[0]-1):
+        if float(data[i, -4]) < e_opt:
+            e_opt = float(data[i, -4])
+            [neurons_opt, batch_size_opt, layers_opt] = data[i, 0:3]
+
+    # Tune LSTM model to optimal parameters
+    model.set_parameters(neurons=neurons_opt, batch_size=batch_size_opt, layers=layers_opt)
 
 
 if __name__ == "__main__":

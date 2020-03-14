@@ -70,7 +70,8 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
     names.insert(0,"ERA5-L")
 
     # Plot colors
-    colors = ["C0", "C1", "C9", "C3"]
+    # colors = ["C0", "C1", "C9", "C3"]
+    colors = ["C0", "C1", "C9", "C3", "C6"]
 
     x = np.arange(0, lab_for_2d.shape[1], 1)
     Y = np.array([lab_for_2d[i*2+1,:] for i in range(0,int(lab_for_2d.shape[0]/2))])
@@ -93,7 +94,7 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
         y = Y[i]
 
         # Plot forecasts on back plane
-        ax.plot( x, [5]*x.shape[0], y, lw=1.5, ls='--', color=colors[i], alpha=0.4)
+        ax.plot( x, [Y.shape[0]+1]*x.shape[0], y, lw=1.5, ls='--', color=colors[i], alpha=0.4)
         # Plot 3D lines
         ax.plot( x, [i+1]*x.shape[0], y, lw=1.5, color=colors[i], alpha=0.8, label=names[i])
         # Append polygon associated with current line
@@ -124,7 +125,7 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
     ax.add_collection3d(poly, zs=range(1,Y.shape[0]+1), zdir='y')
 
     ax.set_xlim(0, 24)
-    ax.set_ylim(0, 5)
+    ax.set_ylim(0, Y.shape[0]+1)
     ax.set_zlim(0, Y.max())
 
     ax.set_title("Forecast comparison")
@@ -135,7 +136,7 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
 
     ax.set_xticks([i*4 for i in range(0,6) ])
 
-    ax.set_yticks(range(0,5))
+    ax.set_yticks(range(0, Y.shape[0]+1))
     names.insert(0,"")
     ax.set_yticklabels(names)
 
