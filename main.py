@@ -41,12 +41,12 @@ G: Feature data points Grid type:                  (CPU heavy)
     3: full (3x3)
 """
 
-# from numpy.random import seed
-# seed(1)
-# # from tensorflow import set_random_seed
-# # set_random_seed(1)
-# from tensorflow import random
-# random.set_seed(1)
+from numpy.random import seed
+seed(1)
+# from tensorflow import set_random_seed
+# set_random_seed(1)
+from tensorflow import random
+random.set_seed(1)
 
 def main():
 
@@ -55,38 +55,38 @@ def main():
 
     # Local time training data start/stop (forecast begins on stop hour)
     # Validation training data start/stop times
-    # valid_start_dt = [
-    #     datetime(2015, 1, 15, 0), datetime(2015, 2, 15, 0),
-    #     datetime(2015, 3, 15, 0), datetime(2015, 4, 15, 0),
-    #     datetime(2015, 5, 15, 0), datetime(2015, 6, 15, 0),
-    #     datetime(2015, 7, 15, 0), datetime(2015, 8, 15, 0),
-    #     datetime(2015, 9, 15, 0), datetime(2015, 10, 15, 0),
-    #     datetime(2015, 11, 15, 0), datetime(2015, 12, 15, 0)]
-    # valid_stop_dt = [
-    #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
-    #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
-    #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
-    #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
-    #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
-    #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+    valid_start_dt = [
+        datetime(2015, 1, 15, 0), datetime(2015, 2, 15, 0),
+        datetime(2015, 3, 15, 0), datetime(2015, 4, 15, 0),
+        datetime(2015, 5, 15, 0), datetime(2015, 6, 15, 0),
+        datetime(2015, 7, 15, 0), datetime(2015, 8, 15, 0),
+        datetime(2015, 9, 15, 0), datetime(2015, 10, 15, 0),
+        datetime(2015, 11, 15, 0), datetime(2015, 12, 15, 0)]
+    valid_stop_dt = [
+        datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+        datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+        datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+        datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
+        datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
+        datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+
+    # Test training data start/stop times
+    test_start_dt = [
+        datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
+        datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
+        datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
+        datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
+    test_stop_dt = [
+        datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
+        datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
+        datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
+        datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
+
+    # valid_start_dt = [datetime(2017, 6, 1, 0)]
+    # valid_stop_dt = [datetime(2017, 7, 1, 0)]
     #
-    # # Test training data start/stop times
-    # test_start_dt = [
-    #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
-    #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
-    #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
-    #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
-    # test_stop_dt = [
-    #     datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
-    #     datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
-    #     datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
-    #     datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
-
-    valid_start_dt = [datetime(2017, 6, 1, 0)]
-    valid_stop_dt = [datetime(2017, 7, 1, 0)]
-
-    test_start_dt = [datetime(2018, 6, 1, 0)]
-    test_stop_dt = [datetime(2018, 7, 1, 0)]
+    # test_start_dt = [datetime(2018, 6, 1, 0)]
+    # test_stop_dt = [datetime(2018, 7, 1, 0)]
 
     # Convert to localized, aware datetime object (2018-...00:00+02:00)
     valid_start_loc_dt = [tz.localize(s) for s in valid_start_dt]
@@ -208,15 +208,15 @@ def main():
     #     models[0], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
 
     # Compare model forecasts based on test training data
-    compare_models(
-       models, test_start_loc_dt, test_stop_loc_dt, results )
+    # compare_models(
+    #    models, test_start_loc_dt, test_stop_loc_dt, results )
 
     # # Extrapolate forecasted wind speeds and calulate power
     # extrapolate_and_calc_power (
     #     models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
-    #
-    # # # Evaluate the influence of the N variable for each model
-    # N = [n for n in range(1,25)]
+    
+    # Evaluate the influence of the N variable for each model
+    N = [n for n in range(1,25)]
     # eval_model_n_var(
     #     models[1], test_start_loc_dt, test_stop_loc_dt, N, results )
     # eval_model_n_var(
