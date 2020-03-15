@@ -8,6 +8,10 @@ from keras.layers import Dense, Dropout
 from keras.layers import LSTM
 from datetime import datetime
 
+from numpy import random as nprandom
+# from tensorflow import set_random_seed
+from tensorflow import random as tfrandom
+
 
 class Lstm:
 
@@ -44,6 +48,11 @@ class Lstm:
 
 
     def run(self, start_loc_dt, stop_loc_dt):
+
+        # Reproducible results (initial states)
+        nprandom.seed(1)
+        # set_random_seed(1)
+        tfrandom.set_seed(1)
 
         run_time = datetime.now()   # Timer 1
 

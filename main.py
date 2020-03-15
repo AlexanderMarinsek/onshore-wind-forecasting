@@ -42,12 +42,12 @@ G: Feature data points Grid type:                  (CPU heavy)
     3: full (3x3)
 """
 
-from numpy.random import seed
-seed(1)
-# from tensorflow import set_random_seed
-# set_random_seed(1)
-from tensorflow import random
-random.set_seed(1)
+# from numpy.random import seed
+# seed(1)
+# # from tensorflow import set_random_seed
+# # set_random_seed(1)
+# from tensorflow import random
+# random.set_seed(1)
 
 def main():
 
@@ -56,38 +56,38 @@ def main():
 
     # Local time training data start/stop (forecast begins on stop hour)
     # Validation training data start/stop times
-    # valid_start_dt = [
-    #     datetime(2015, 1, 15, 0), datetime(2015, 2, 15, 0),
-    #     datetime(2015, 3, 15, 0), datetime(2015, 4, 15, 0),
-    #     datetime(2015, 5, 15, 0), datetime(2015, 6, 15, 0),
-    #     datetime(2015, 7, 15, 0), datetime(2015, 8, 15, 0),
-    #     datetime(2015, 9, 15, 0), datetime(2015, 10, 15, 0),
-    #     datetime(2015, 11, 15, 0), datetime(2015, 12, 15, 0)]
-    # valid_stop_dt = [
-    #     datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
-    #     datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
-    #     datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
-    #     datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
-    #     datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
-    #     datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+    valid_start_dt = [
+        datetime(2015, 1, 15, 0), datetime(2015, 2, 15, 0),
+        datetime(2015, 3, 15, 0), datetime(2015, 4, 15, 0),
+        datetime(2015, 5, 15, 0), datetime(2015, 6, 15, 0),
+        datetime(2015, 7, 15, 0), datetime(2015, 8, 15, 0),
+        datetime(2015, 9, 15, 0), datetime(2015, 10, 15, 0),
+        datetime(2015, 11, 15, 0), datetime(2015, 12, 15, 0)]
+    valid_stop_dt = [
+        datetime(2018, 1, 15, 0), datetime(2018, 2, 15, 0),
+        datetime(2018, 3, 15, 0), datetime(2018, 4, 15, 0),
+        datetime(2018, 5, 15, 0), datetime(2018, 6, 15, 0),
+        datetime(2018, 7, 15, 0), datetime(2018, 8, 15, 0),
+        datetime(2018, 9, 15, 0), datetime(2018, 10, 15, 0),
+        datetime(2018, 11, 15, 0), datetime(2018, 12, 15, 0)]
+
+    # Test training data start/stop times
+    test_start_dt = [
+        datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
+        datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
+        datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
+        datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
+    test_stop_dt = [
+        datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
+        datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
+        datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
+        datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
+
+    # valid_start_dt = [datetime(2017, 6, 1, 0)]
+    # valid_stop_dt = [datetime(2017, 7, 1, 0)]
     #
-    # # Test training data start/stop times
-    # test_start_dt = [
-    #     datetime(2016, 1, 15, 0), datetime(2016, 2, 15, 0),
-    #     datetime(2016, 3, 15, 0), datetime(2016, 4, 15, 0),
-    #     datetime(2016, 5, 15, 0), datetime(2016, 6, 15, 0),
-    #     datetime(2016, 7, 15, 0), datetime(2016, 8, 15, 0)]
-    # test_stop_dt = [
-    #     datetime(2019, 1, 15, 0), datetime(2019, 2, 15, 0),
-    #     datetime(2019, 3, 15, 0), datetime(2019, 4, 15, 0),
-    #     datetime(2019, 5, 15, 0), datetime(2019, 6, 15, 0),
-    #     datetime(2019, 7, 15, 0), datetime(2019, 8, 15, 0)]
-
-    valid_start_dt = [datetime(2017, 6, 1, 0)]
-    valid_stop_dt = [datetime(2017, 7, 1, 0)]
-
-    test_start_dt = [datetime(2018, 6, 1, 0)]
-    test_stop_dt = [datetime(2018, 7, 1, 0)]
+    # test_start_dt = [datetime(2018, 6, 1, 0)]
+    # test_stop_dt = [datetime(2018, 7, 1, 0)]
 
     # Convert to localized, aware datetime object (2018-...00:00+02:00)
     valid_start_loc_dt = [tz.localize(s) for s in valid_start_dt]
@@ -134,12 +134,12 @@ def main():
     c_optimal = 10
     epsilon_optimal = 0.8
 
-    neurons_list = [1, 2, 4, 8, 16, 32]
+    # neurons_list = [1, 2, 4, 8, 16, 32]
+    neurons_list = [1, 2, 4, 8, 16]
     layers_list = [1, 2, 3]
     batch_size_list = [32]  # default
 
     # neurons_opt = 2
-    # neurons_opt = 8
     # layers_opt = 3
 
     models = [
@@ -197,8 +197,8 @@ def main():
     #    n_estimators_list, criterion_list, max_features_list, results )
     # tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
     #    kernel_list, c_list, epsilon_list, results )
-    # tune_lstm_model_parameters(models[0], valid_start_loc_dt, valid_stop_loc_dt,
-    #     neurons_list, batch_size_list, layers_list, results)
+    tune_lstm_model_parameters(models[0], valid_start_loc_dt, valid_stop_loc_dt,
+        neurons_list, batch_size_list, layers_list, results)
 
     # # Tune model variables based on validation training data
     # tune_model_vars(
@@ -209,8 +209,8 @@ def main():
     #     models[0], valid_start_loc_dt, valid_stop_loc_dt, M, N, G, results )
 
     # Compare model forecasts based on test training data
-    compare_models(
-       models, test_start_loc_dt, test_stop_loc_dt, results )
+    # compare_models(
+    #    models, test_start_loc_dt, test_stop_loc_dt, results )
 
     # # Extrapolate forecasted wind speeds and calulate power
     # extrapolate_and_calc_power (
@@ -1013,7 +1013,7 @@ def tune_lstm_model_parameters(model, start_loc_dt, stop_loc_dt, neurons_list, b
             [neurons_opt, batch_size_opt, layers_opt] = data[i, 0:3]
 
     # Tune LSTM model to optimal parameters
-    model.set_parameters(neurons=neurons_opt, batch_size=batch_size_opt, layers=layers_opt)
+    # model.set_parameters(neurons=neurons_opt, batch_size=batch_size_opt, layers=layers_opt)
 
 
 if __name__ == "__main__":
