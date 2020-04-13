@@ -13,30 +13,37 @@ plt.style.use(["default", "./custom1.mplstyle"])
 
 def plot_data_violin( data, names ):
 
-    colors = [ 'C0', 'C1', 'C9', 'C3', 'C6' ]
+    colors = [ 'C0', 'C1', 'C9', 'C3', 'C8' ]
     figname = 'Violin-data_%s' % '-'.join(names)
     plot_violin( data, names, colors, figname, 'Source', r'Wind speed $(\frac{m}{s})$' )
 
 
 def plot_mse_violin( mse, names ):
 
-    colors = [ 'C1', 'C9', 'C3', 'C6' ]
+    colors = [ 'C1', 'C9', 'C3', 'C8' ]
     figname = 'Violin-MSE_%s' % '-'.join(names)
     plot_violin( mse, names, colors, figname, 'Source', r'MSE $(\frac{m^2}{s^2})$' )
 
 
 def plot_violin( data, names, colors, figname, xlabel, ylabel ):
 
-    sns.set(style="whitegrid")
+    # sns.set(style="whitegrid")
+    # sns.set_style("ticks")
 
-    ax = sns.violinplot( data=data, palette=colors )
+    ax = sns.violinplot( data=data, palette=colors, zorder=99 )
 
     ax.set_xticklabels( names )
 
     ax.set_xlabel( xlabel )
     ax.set_ylabel( ylabel )
 
-    plt.savefig("%s.%s" % (figname, extension))
+    plt.grid(zorder=2)
+
+    plt.tight_layout(pad=0.2)
+
+    plt.savefig("%s.%s" % (figname, 'png'), dpi=300)
+    plt.savefig("%s.%s" % (figname, 'eps'), dpi=300)
+
     plt.show()
 
 

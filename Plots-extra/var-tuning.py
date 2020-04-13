@@ -38,7 +38,9 @@ def plot_var_tuning( model_name, M, G, rmse, t, figname ):
     plt.figure()
 
     plt.scatter(x, y, s=scale, c=e, cmap=colormap, linewidths=2, edgecolors="#555555", zorder=2)
-    plt.colorbar()
+
+    clb = plt.colorbar()
+    # clb.ax.set_title(r'RMSE ($\frac{m}{s}$)', loc='center', pad=10)
 
     plt.grid(zorder=2)
 
@@ -53,14 +55,17 @@ def plot_var_tuning( model_name, M, G, rmse, t, figname ):
     plt.xlim(x.min()-1, x.max()+1)
     plt.ylim(y.min()-1, y.max()+1)
 
-    plt.savefig("%s.%s" % (figname, extension))
+    plt.tight_layout(pad=0.2)
+
+    plt.savefig("%s.%s" % (figname, 'png'), dpi=300)
+    plt.savefig("%s.%s" % (figname, 'eps'), dpi=300)
     # plt.show()
     plt.close()
 
 
 def main():
 
-    filepath = "RF-var-tuning-errors-avg.csv"
+    filepath = "LSTM-var-tuning-errors-avg.csv"
     M = []; G = []; rmse = []; t = []
 
     with open(filepath) as csv_file:
@@ -80,7 +85,7 @@ def main():
     rmse = np.array(rmse)
     t = np.array(t)
 
-    plot_var_tuning("RF" , M, G, rmse, t, "RF-var-tuning-errors-avg-PUB")
+    plot_var_tuning("LSTM" , M, G, rmse, t, "LSTM-var-tuning-errors-avg-PUB")
 
 
 if __name__ == "__main__":

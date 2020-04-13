@@ -64,14 +64,15 @@ def plot_forecast(labels, forecast, figname):
 def plot_comparison_forecast(lab_for_2d, names, figname):
 
     # TODO: DONE Use 'k' index as 3rd dimension
-    # TODO: Prettyfy plot (test it in a separate test module)
+    # TODO: DONE Prettyfy plot (test it in a separate test module)
 
     # Add ERA5-L model/forecast name
-    names.insert(0,"ERA5-L")
+    names.insert(0,"ERA5-L.")
 
     # Plot colors
     # colors = ["C0", "C1", "C9", "C3"]
-    colors = ["C0", "C1", "C9", "C3", "C6"]
+    # colors = ["C0", "C1", "C9", "C3", "C6"]
+    colors = ["C0", "C1", "C9", "C3", "C8"]
 
     x = np.arange(0, lab_for_2d.shape[1], 1)
     Y = np.array([lab_for_2d[i*2+1,:] for i in range(0,int(lab_for_2d.shape[0]/2))])
@@ -128,11 +129,15 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
     ax.set_ylim(0, Y.shape[0]+1)
     ax.set_zlim(0, Y.max())
 
-    ax.set_title("Forecast comparison")
-    ax.set_xlabel("Time (h)", labelpad=30)
-    ax.set_ylabel("Model", labelpad=25)
-    ax.set_zlabel(r"Speed $(\frac{m}{s})$", labelpad=10)
-    ax.legend()
+    # ax.set_title("Forecast comparison")
+    # ax.set_xlabel("Time (h)", labelpad=30)
+    # ax.set_ylabel("Model", labelpad=25)
+    # ax.set_zlabel(r"Speed $(\frac{m}{s})$", labelpad=10)
+    ax.set_xlabel("Time (h)", labelpad=45)
+    ax.set_ylabel("Model", labelpad=50)
+    ax.set_zlabel(r"Wind speed $(\frac{m}{s})$", labelpad=20)
+    # ax.legend( ncol=5, mode='expand' )
+    ax.legend( loc='upper left', bbox_to_anchor=(0.05,0.95))
 
     ax.set_xticks([i*4 for i in range(0,6) ])
 
@@ -144,9 +149,14 @@ def plot_comparison_forecast(lab_for_2d, names, figname):
     ax.yaxis.set_rotate_label(0)
     ax.zaxis.set_rotate_label(90)
 
-    plt.tight_layout()
+    fig.tight_layout(pad=0.2)
+
+    fig.savefig("%s.%s" % (figname, 'png'), dpi=300)
+    fig.savefig("%s.%s" % (figname, 'eps'), dpi=300)
+
+    # plt.tight_layout()
     #plt.show()
-    plt.savefig("%s.%s" % (figname, extension))
+    # plt.savefig("%s.%s" % (figname, extension))
     plt.close()
 
 
@@ -164,11 +174,12 @@ def plot_power_forecast(power_2d, ext_2d, p_curve, names, figname):
     # TODO: Prettyfy plot (test it in a separate test module)
 
     # Add ERA5-L model/forecast name
-    # names.insert(0,"ERA5-L")
+    names.insert(0,"ERA5-L")
 
     # Plot colors
     # colors = ["C0", "C1", "C2", "C3"]
-    colors = ["C1", "C9", "C3"]
+    # colors = ["C1", "C9", "C3"]
+    colors = ["C0", "C1", "C9", "C3", "C8"]
 
     # Get Xs
     x = np.arange(0, power_2d.shape[1], 1)
@@ -180,8 +191,8 @@ def plot_power_forecast(power_2d, ext_2d, p_curve, names, figname):
         [ext_2d[i * 2 + 1, :] for i in range(0, int(ext_2d.shape[0] / 2))])
 
     # Add ERA5-L data
-    # Yp = np.concatenate((power_2d[0, :].reshape(1, -1), Yp), axis=0)
-    # Ye = np.concatenate((ext_2d[0, :].reshape(1, -1), Ye), axis=0)
+    Yp = np.concatenate((power_2d[0, :].reshape(1, -1), Yp), axis=0)
+    Ye = np.concatenate((ext_2d[0, :].reshape(1, -1), Ye), axis=0)
 
     fig = plt.figure()
 
@@ -195,10 +206,12 @@ def plot_power_forecast(power_2d, ext_2d, p_curve, names, figname):
         y = Yp[i, :]
         ax1.plot(x, y, ls="-", color=colors[i], label=names[i], alpha=0.85)
 
-    ax1.set_title("WT Power Production")
+    # ax1.set_title("WT Power Production")
     ax1.set_ylabel("Power (kW)")
     ax1.set_xlabel("Time (h)")
-    ax1.legend()
+    ax1.legend(ncol=2)
+
+    # ax1.set_xticks([0,4,8,12,16,20])
 
     # Plot power curve (duplicate Y axis)
     ax2 = fig.add_subplot(gs[1], sharey=ax1)
@@ -211,12 +224,20 @@ def plot_power_forecast(power_2d, ext_2d, p_curve, names, figname):
         ax2.fill_between(data[0, :], data[1, :], color=colors[i], alpha=0.3,
                          label=names[i])
 
-    ax2.set_title("WT Power Curve")
+    # ax2.set_title("WT Power Curve")
     # ax2.set_ylabel("Power (kW)")
-    ax2.set_xlabel(r"Speed $(\frac{m}{s})$")
+    ax2.set_xlabel(r"Wind speed $(\frac{m}{s})$")
     # ax2.legend()
 
-    fig.savefig("%s.%s" % (figname, extension))
+    # ax2.set_yticklabels([])
+    ax2.get_yaxis().set_visible(False)
+
+    fig.tight_layout(pad=0.2)
+
+    fig.savefig("%s.%s" % (figname, 'png'), dpi=300)
+    fig.savefig("%s.%s" % (figname, 'eps'), dpi=300)
+
+    # fig.savefig("%s.%s" % (figname, extension))
     # plt.show()
     plt.close()
 
@@ -310,6 +331,27 @@ def plot_n_eval( data, figname ):
     fig.savefig("%s.%s" % (figname, extension))
     # fig.show()
     plt.close()
+
+
+if __name__ == '__main__':
+
+    from csv import reader as csv_reader
+
+    filepath = '/media/alexander/R2D2_clone/dev/ML-FRI/Project/Sandbox/onshore-wind-forecasting/Results/Publication-results/3Y/Comparison-BL-RF-SVR-LSTM/Data/Comparison-forecast_2016-08-15-2019-08-15.csv'
+
+    with open(filepath, 'r') as fr:
+        reader = csv_reader(fr, delimiter=',')
+
+        lab_for_2d = np.zeros(( 24, 8 ))
+
+        for i, row in enumerate(reader):
+            if i == 0:
+                continue
+            lab_for_2d[i-1,:] = np.array([row])
+
+    names = ['BL', 'RF', 'SVR', 'LSTM']
+
+    plot_comparison_forecast(lab_for_2d.transpose(), names, 'comparison-2019-08-15')
 
 #
 # def plot_scores (x, x_label, bs_arr, ss_arr, bs_labels, ss_labels, figname):

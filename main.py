@@ -143,13 +143,21 @@ def main():
     # layers_opt = 3
 
     models = [
-        # Bl(data_dir, "BL"),
-        # Rf(data_dir, "RF"),
-        # Svr(data_dir, "SVR"),
+        Bl(data_dir, "BL"),
+        Rf(data_dir, "RF"),
+        Svr(data_dir, "SVR"),
         Lstm(data_dir, "LSTM")
     ]
 
-    # models[0].set_parameters( neurons=neurons_opt, layers=layers_opt )
+    # models[0].set_vars( 1, 3, 0 )
+    # models[1].set_vars( 1, 3, 0 )
+    # models[2].set_vars( 1, 3, 3 )
+    # models[3].set_vars( 1, 3, 0 )
+
+    models[0].set_vars( 1, 24, 0 )
+    models[1].set_vars( 1, 24, 0 )
+    models[2].set_vars( 1, 24, 3 )
+    models[3].set_vars( 1, 24, 0 )
 
     # Initiate new results directory and global object
     date_str = datetime.utcnow().strftime("%F")
@@ -197,8 +205,8 @@ def main():
     #    n_estimators_list, criterion_list, max_features_list, results )
     # tune_svr_model_parameters( models[2], valid_start_loc_dt, valid_stop_loc_dt,
     #    kernel_list, c_list, epsilon_list, results )
-    tune_lstm_model_parameters(models[0], valid_start_loc_dt, valid_stop_loc_dt,
-        neurons_list, batch_size_list, layers_list, results)
+    # tune_lstm_model_parameters(models[0], valid_start_loc_dt, valid_stop_loc_dt,
+    #     neurons_list, batch_size_list, layers_list, results)
 
     # # Tune model variables based on validation training data
     # tune_model_vars(
@@ -213,8 +221,8 @@ def main():
     #    models, test_start_loc_dt, test_stop_loc_dt, results )
 
     # # Extrapolate forecasted wind speeds and calulate power
-    # extrapolate_and_calc_power (
-    #     models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
+    extrapolate_and_calc_power (
+        models, test_start_loc_dt, test_stop_loc_dt, h0, h, z0, turbine, results )
     
     # Evaluate the influence of the N variable for each model
     N = [n for n in range(1,25)]
@@ -574,6 +582,7 @@ def extrapolate_and_calc_power ( models, start_loc_dt, stop_loc_dt, h0, h, z0, t
             [m, n, g] = model.get_vars()
             filename = "%s/%s-forecast-10_%s-%s_%d-%d-%d" % (
                 results.get_full_path(),
+                # './Results/Publication-results/2020-03-19x_N-forecasts-BL-RF-SVR-LSTM',
                 model.name,
                 start.strftime("%F"),
                 stop.strftime("%F"),

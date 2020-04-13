@@ -34,12 +34,20 @@ def plot_timestamp( x, y, s, c, figname ):
 
     #ax1.set_title("N Variable Evaluation")
     ax1.set_xlabel("Time (h)")
-    ax1.set_ylabel("Timestamp")
+    ax1.set_ylabel("Timestamp value")
 
     ax1.set_xticks([0,6,12,18,24,30,36,42,48,54,60,66,72])
-    ax1.set_xticklabels(["0 (24)","6","12","18","0 (24)","6","12","18","0 (24)","6","12","18","0 (24)"])
+    ax1.set_xticklabels(["0 (24)","6","12","18","0","6","12","18","0","6","12","18","0"])
 
-    fig.savefig("%s.%s" % (figname, extension))
+    ax1.set_ylim(top=35)
+    ax1.set_yticks([0, 6, 12, 18, 24])
+
+    fig.tight_layout(pad=0.2)
+
+    fig.savefig("%s.%s" % (figname, 'png'), dpi=300)
+    fig.savefig("%s.%s" % (figname, 'eps'), dpi=300)
+    # fig.savefig("%s.%s" % (figname, 'tif'), dpi=300)
+    # fig.savefig("%s.%s" % (figname, 'pdf'), dpi=300)
     # fig.show()
     plt.close()
 
